@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Deep Dark Tech TD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000000;
+      --primary: #6366f1;
+      --enemy: #f97373;
+      --hud-bg: rgba(15, 23, 42, 0.7);
+      --hud-border: rgba(148, 163, 184, 0.4);
+    }
+    body {
+      background: var(--bg);
+      color: #e5e7eb;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .font-mono {
+      font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    canvas {
+      background: #000;
+      display: block;
+    }
+    .btn-tower {
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    }
+    .btn-tower:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
+    }
+    .btn-tower.active {
+      background: rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.8);
+    }
+    .upgrade-panel {
+      transition: all 0.3s ease;
+      max-height: 0;
+      overflow: hidden;
+    }
+    .upgrade-panel.open {
+      max-height: 250px;
+    }
+    .wave-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 20px;
+      border-radius: 5px;
+      border: 1px solid var(--primary);
+      font-family: "Space Mono", monospace;
+      font-size: 1.2rem;
+      color: white;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .notification {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 8px 16px;
+      border-radius: 4px;
+      border: 1px solid #22c55e;
+      font-family: "Space Mono", monospace;
+      font-size: 0.9rem;
+      color: #22c55e;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-5xl mx-auto px-4 py-6">
+    <!-- HUD -->
+    <div class="flex flex-col gap-3 mb-3">
+      <div class="flex items-center justify-between rounded border border-slate-600/40 bg-slate-900/60 px-4 py-2 text-xs sm:text-sm">
+        <div class="flex items-center gap-4">
+          <div class="font-mono tracking-tight">
+            Data Fragments:
+            <span id="hud-money" class="text-indigo-400 font-semibold">0</span>
+          </div>
+          <div class="font-mono tracking-tight">
+            Wave:
+            <span id="hud-wave" class="text-slate-200">1</span>
+          </div>
+          <div class="font-mono tracking-tight">
+            Core Integrity:
+            <span id="hud-lives" class="text-rose-400">20</span>
+          </div>
+        </div>
+        <div class="hidden sm:flex items-center gap-2 text-[0.65rem] text-slate-400">
+          <span>Click to place towers • Right-click to upgrade • Don't build on the path</span>
+        </div>
+      </div>
+
+      <!-- Tower selection -->
+      <div class="flex flex-wrap gap-2 rounded border border-slate-600/40 bg-slate-900/60 px-3 py-2 text-xs sm:text-sm">
+        <button data-tower="pulse"
+          class="btn-tower active flex-1 min-w-[7rem] border border-indigo-400/40 rounded px-2 py-1 flex flex-col text-left">
+          <span class="font-mono text-indigo-300">Basic Pulse</span>
+          <span class="text-[0.65rem] text-slate-400">Fast, low damage</span>
+          <span class="text-[0.65rem] text-slate-500 mt-1">Cost: 40</span>
+        </button>
+        <button data-tower="beam"
+          class="btn-tower flex-1 min-w-[7rem] border border-indigo-400/40 rounded px-2 py-1 flex flex-col text-left">
+          <span class="font-mono text-indigo-300">Heavy Beam</span>
+          <span class="text-[0.65rem] text-slate-400">Slow, high damage laser</span>
+          <span class="text-[0.65rem] text-slate-500 mt-1">Cost: 80</span>
+        </button>
+        <button data-tower="slow"
+          class="btn-tower flex-1 min-w-[7rem] border border-indigo-400/40 rounded px-2 py-1 flex flex-col text-left">
+          <span class="font-mono text-indigo-300">Slowing Field</span>
+          <span class="text-[0.65rem] text-slate-400">Slows enemies in range</span>
+          <span class="text-[0.65rem] text-slate-500 mt-1">Cost: 70</span>
+        </button>
+        <button data-tower="missile"
+          class="btn-tower flex-1 min-w-[7rem] border border-indigo-400/40 rounded px-2 py-1 flex flex-col text-left">
+          <span class="font-mono text-indigo-300">Missile Launcher</span>
+          <span class="text-[0.65rem] text-slate-400">AOE damage, slow reload</span>
+          <span class="text-[0.65rem] text-slate-500 mt-1">Cost: 120</span>
+        </button>
+        <button data-tower="sniper"
+          class="btn-tower flex-1 min-w-[7rem] border border-indigo-400/40 rounded px-2 py-1 flex flex-col text-left">
+          <span class="font-mono text-indigo-300">Sniper</span>
+          <span class="text-[0.65rem] text-slate-400">Very long range, high damage</span>
+          <span class="text-[0.65rem] text-slate-500 mt-1">Cost: 150</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Game container -->
+    <div class="relative border border-slate-700/60 rounded-lg overflow-hidden bg-black">
+      <canvas id="game" class="w-full h-[60vh] sm:h-[65vh]"></canvas>
+
+      <!-- Wave indicator -->
+      <div id="wave-indicator" class="wave-indicator">
+        Wave <span id="wave-number">1</span> Incoming!
+      </div>
+
+      <!-- Notification -->
+      <div id="notification" class="notification">
+        New tower unlocked!
+      </div>
+
+      <!-- Upgrade panel -->
+      <div id="upgrade-panel" class="upgrade-panel absolute top-4 right-4 bg-slate-900/90 border border-slate-600/60 rounded p-3 w-48">
+        <div class="font-mono text-sm text-indigo-300 mb-2" id="upgrade-tower-name">Tower Name</div>
+        <div class="text-xs text-slate-400 mb-3" id="upgrade-tower-stats">Level: 1</div>
+        
+        <div class="space-y-2">
+          <button id="upgrade-damage-btn" class="w-full text-left text-xs py-1 px-2 bg-slate-800/50 hover:bg-slate-700/50 rounded border border-slate-600/40">
+            <div class="flex justify-between">
+              <span>Upgrade Damage</span>
+              <span id="upgrade-damage-cost" class="text-indigo-300">50</span>
+            </div>
+          </button>
+          
+          <button id="upgrade-range-btn" class="w-full text-left text-xs py-1 px-2 bg-slate-800/50 hover:bg-slate-700/50 rounded border border-slate-600/40">
+            <div class="flex justify-between">
+              <span>Upgrade Range</span>
+              <span id="upgrade-range-cost" class="text-indigo-300">40</span>
+            </div>
+          </button>
+          
+          <button id="upgrade-speed-btn" class="w-full text-left text-xs py-1 px-2 bg-slate-800/50 hover:bg-slate-700/50 rounded border border-slate-600/40">
+            <div class="flex justify-between">
+              <span>Upgrade Speed</span>
+              <span id="upgrade-speed-cost" class="text-indigo-300">60</span>
+            </div>
+          </button>
+
+          <button id="special-upgrade-btn" class="w-full text-left text-xs py-1 px-2 bg-purple-800/50 hover:bg-purple-700/50 rounded border border-purple-600/40 hidden">
+            <div class="flex justify-between">
+              <span id="special-upgrade-name">Special Upgrade</span>
+              <span id="special-upgrade-cost" class="text-purple-300">100</span>
+            </div>
+          </button>
+          
+          <button id="sell-tower-btn" class="w-full text-left text-xs py-1 px-2 bg-rose-900/40 hover:bg-rose-800/40 rounded border border-rose-600/40 mt-2">
+            <div class="flex justify-between">
+              <span>Sell Tower</span>
+              <span id="sell-value" class="text-rose-300">20</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Game Over overlay -->
+      <div id="game-over"
+           class="pointer-events-none opacity-0 transition-opacity duration-300 absolute inset-0 flex items-center justify-center bg-black/80">
+        <div class="border border-slate-600/60 bg-slate-900/80 px-6 py-5 rounded-lg text-center max-w-xs">
+          <div class="font-mono text-lg text-rose-400 mb-2">CORE BREACHED</div>
+          <p class="text-xs text-slate-300 mb-4">
+            The data stream was overwhelmed. Recalibrate your defenses and try again.
+          </p>
+          <button id="retry-btn"
+                  class="pointer-events-auto inline-flex items-center justify-center px-4 py-1.5 rounded border border-indigo-400/60 text-xs font-mono text-indigo-200 hover:bg-indigo-500/10">
+            Retry Simulation
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tailwind config (minimal)
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: "#6366f1",
+          },
+        },
+      },
+    };
+
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    const hudMoney = document.getElementById("hud-money");
+    const hudWave = document.getElementById("hud-wave");
+    const hudLives = document.getElementById("hud-lives");
+    const gameOverEl = document.getElementById("game-over");
+    const retryBtn = document.getElementById("retry-btn");
+    const upgradePanel = document.getElementById("upgrade-panel");
+    const waveIndicator = document.getElementById("wave-indicator");
+    const waveNumber = document.getElementById("wave-number");
+    const notification = document.getElementById("notification");
+    
+    // Upgrade panel elements
+    const upgradeTowerName = document.getElementById("upgrade-tower-name");
+    const upgradeTowerStats = document.getElementById("upgrade-tower-stats");
+    const upgradeDamageBtn = document.getElementById("upgrade-damage-btn");
+    const upgradeRangeBtn = document.getElementById("upgrade-range-btn");
+    const upgradeSpeedBtn = document.getElementById("upgrade-speed-btn");
+    const specialUpgradeBtn = document.getElementById("special-upgrade-btn");
+    const specialUpgradeName = document.getElementById("special-upgrade-name");
+    const specialUpgradeCost = document.getElementById("special-upgrade-cost");
+    const sellTowerBtn = document.getElementById("sell-tower-btn");
+    const upgradeDamageCost = document.getElementById("upgrade-damage-cost");
+    const upgradeRangeCost = document.getElementById("upgrade-range-cost");
+    const upgradeSpeedCost = document.getElementById("upgrade-speed-cost");
+    const sellValue = document.getElementById("sell-value");
+
+    const towerButtons = Array.from(document.querySelectorAll("[data-tower]"));
+
+    let width = 800;
+    let height = 450;
+    let dpr = 1;
+    let canvasRect = null;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvasRect = rect;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    // Initial resize
+    resizeCanvas();
+
+    // Game state
+    let money, lives, wave, enemies, towers, projectiles, particles, path, spawnTimer, spawnInterval, enemiesToSpawn, gameRunning, lastTime;
+    let selectedTowerType = "pulse";
+    let selectedTower = null;
+    let waveActive = false;
+    let towerUnlocked = {
+      missile: false,
+      sniper: false
+    };
+
+    const TOWER_COST = {
+      pulse: 40,
+      beam: 80,
+      slow: 70,
+      missile: 120,
+      sniper: 150
+    };
+
+    const ENEMY_TYPES = {
+      normal: { color: "#f97373", speed: 40, hp: 40, reward: 8, scale: 1.0 },
+      fast: { color: "#93c5fd", speed: 65, hp: 25, reward: 10, scale: 0.8 },
+      tank: { color: "#f59e0b", speed: 25, hp: 100, reward: 15, scale: 1.3 },
+      boss: { color: "#dc2626", speed: 20, hp: 300, reward: 50, scale: 1.8 }
+    };
+
+    function initPath() {
+      // Elegant winding path as normalized points (0..1) then scaled
+      const pts = [
+        [0.02, 0.5],
+        [0.18, 0.2],
+        [0.35, 0.25],
+        [0.5, 0.15],
+        [0.65, 0.3],
+        [0.8, 0.25],
+        [0.92, 0.55],
+        [0.75, 0.75],
+        [0.55, 0.7],
+        [0.35, 0.8],
+        [0.15, 0.7],
+        [0.02, 0.9],
+      ];
+      return pts.map(([x, y]) => ({ x: x * width * dpr, y: y * height * dpr }));
+    }
+
+    function resetGame() {
+      money = 120;
+      lives = 20;
+      wave = 1;
+      enemies = [];
+      towers = [];
+      projectiles = [];
+      particles = [];
+      path = initPath();
+      spawnTimer = 0;
+      spawnInterval = 1.0;
+      enemiesToSpawn = 0;
+      gameRunning = true;
+      selectedTower = null;
+      waveActive = false;
+      lastTime = performance.now();
+      gameOverEl.classList.remove("opacity-100");
+      gameOverEl.classList.add("opacity-0");
+      gameOverEl.classList.add("pointer-events-none");
+      upgradePanel.classList.remove("open");
+      
+      // Reset tower unlocks
+      towerUnlocked = {
+        missile: false,
+        sniper: false
+      };
+      
+      // Hide advanced tower buttons initially
+      document.querySelector('[data-tower="missile"]').classList.add('hidden');
+      document.querySelector('[data-tower="sniper"]').classList.add('hidden');
+      
+      updateHUD();
+    }
+
+    function updateHUD() {
+      hudMoney.textContent = Math.floor(money);
+      hudWave.textContent = wave;
+      hudLives.textContent = lives;
+    }
+
+    function distance(a, b) {
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function getEnemyTypeForWave() {
+      if (wave < 3) return "normal";
+      if (wave < 5) return Math.random() < 0.7 ? "normal" : "fast";
+      if (wave < 8) {
+        const rand = Math.random();
+        if (rand < 0.5) return "normal";
+        if (rand < 0.8) return "fast";
+        return "tank";
+      }
+      if (wave === 10) return "boss";
+      
+      const rand = Math.random();
+      if (rand < 0.4) return "normal";
+      if (rand < 0.7) return "fast";
+      if (rand < 0.9) return "tank";
+      return "boss";
+    }
+
+    function spawnEnemy() {
+      const type = getEnemyTypeForWave();
+      const enemyType = ENEMY_TYPES[type];
+      const hp = enemyType.hp + wave * 10;
+      const speed = enemyType.speed + wave * 1.5;
+      
+      enemies.push({
+        x: path[0].x,
+        y: path[0].y,
+        hp,
+        maxHp: hp,
+        speed,
+        pathIndex: 0,
+        t: 0,
+        slowFactor: 1,
+        type: type,
+        color: enemyType.color,
+        reward: enemyType.reward + Math.floor(wave * 1.5),
+        scale: enemyType.scale
+      });
+    }
+
+    function startWave() {
+      if (waveActive) return;
+      
+      // Show wave indicator
+      waveNumber.textContent = wave;
+      waveIndicator.style.opacity = "1";
+      setTimeout(() => {
+        waveIndicator.style.opacity = "0";
+      }, 2000);
+      
+      waveActive = true;
+      enemiesToSpawn = 8 + wave * 2;
+      spawnInterval = Math.max(0.2, 1.0 - wave * 0.04);
+      spawnTimer = 0;
+    }
+
+    function nextWave() {
+      wave++;
+      waveActive = false;
+      updateHUD();
+      
+      // Unlock new towers at certain waves
+      if (wave === 3 && !towerUnlocked.missile) {
+        towerUnlocked.missile = true;
+        document.querySelector('[data-tower="missile"]').classList.remove('hidden');
+        showNotification("Missile Launcher unlocked!");
+      }
+      
+      if (wave === 5 && !towerUnlocked.sniper) {
+        towerUnlocked.sniper = true;
+        document.querySelector('[data-tower="sniper"]').classList.remove('hidden');
+        showNotification("Sniper Tower unlocked!");
+      }
+    }
+
+    function showNotification(message) {
+      notification.textContent = message;
+      notification.style.opacity = "1";
+      setTimeout(() => {
+        notification.style.opacity = "0";
+      }, 3000);
+    }
+
+    function worldPosFromEvent(e) {
+      if (!canvasRect) {
+        canvasRect = canvas.getBoundingClientRect();
+      }
+      
+      const x = (e.clientX - canvasRect.left) * dpr;
+      const y = (e.clientY - canvasRect.top) * dpr;
+      return { x, y };
+    }
+
+    function isOnPath(pos) {
+      // Check distance to each segment; if < threshold, treat as on path
+      const threshold = 22 * dpr;
+      for (let i = 0; i < path.length - 1; i++) {
+        const a = path[i];
+        const b = path[i + 1];
+        const vx = b.x - a.x;
+        const vy = b.y - a.y;
+        const wx = pos.x - a.x;
+        const wy = pos.y - a.y;
+        const c1 = vx * wx + vy * wy;
+        const c2 = vx * vx + vy * vy;
+        let t = 0;
+        if (c2 > 0) t = Math.max(0, Math.min(1, c1 / c2));
+        const proj = { x: a.x + t * vx, y: a.y + t * vy };
+        if (distance(pos, proj) < threshold) return true;
+      }
+      return false;
+    }
+
+    function isTowerAtPos(pos) {
+      const threshold = 20 * dpr;
+      for (const tower of towers) {
+        if (distance(pos, tower) < threshold) {
+          return tower;
+        }
+      }
+      return null;
+    }
+
+    function addTower(pos, type) {
+      const cost = TOWER_COST[type];
+      if (money < cost) return;
+      if (isOnPath(pos)) return;
+      if (isTowerAtPos(pos)) return;
+
+      const base = {
+        x: pos.x,
+        y: pos.y,
+        type,
+        cooldown: 0,
+        level: 1,
+        damageLevel: 1,
+        rangeLevel: 1,
+        speedLevel: 1,
+        specialLevel: 0
+      };
+
+      if (type === "pulse") {
+        base.fireRate = 4; // shots per second
+        base.damage = 10;
+        base.range = 130 * dpr;
+        base.baseDamage = 10;
+        base.baseRange = 130 * dpr;
+        base.baseFireRate = 4;
+      } else if (type === "beam") {
+        base.fireRate = 0.8;
+        base.damage = 40;
+        base.range = 160 * dpr;
+        base.baseDamage = 40;
+        base.baseRange = 160 * dpr;
+        base.baseFireRate = 0.8;
+      } else if (type === "slow") {
+        base.fireRate = 0; // aura
+        base.damage = 0;
+        base.range = 120 * dpr;
+        base.slowAmount = 0.45;
+        base.baseRange = 80 * dpr;
+        base.baseSlowAmount = 0.45;
+      } else if (type === "missile") {
+        base.fireRate = 0.6;
+        base.damage = 60;
+        base.range = 140 * dpr;
+        base.splashRadius = 50 * dpr;
+        base.baseDamage = 60;
+        base.baseRange = 140 * dpr;
+        base.baseFireRate = 0.6;
+        base.baseSplashRadius = 50 * dpr;
+      } else if (type === "sniper") {
+        base.fireRate = 0.4;
+        base.damage = 120;
+        base.range = 250 * dpr;
+        base.penetration = 1;
+        base.baseDamage = 120;
+        base.baseRange = 250 * dpr;
+        base.baseFireRate = 0.4;
+        base.basePenetration = 1;
+      }
+
+      towers.push(base);
+      money -= cost;
+      updateHUD();
+    }
+
+    function updateUpgradePanel(tower) {
+      if (!tower) {
+        upgradePanel.classList.remove("open");
+        return;
+      }
+      
+      selectedTower = tower;
+      
+      // Update tower info
+      const typeNames = {
+        pulse: "Basic Pulse",
+        beam: "Heavy Beam",
+        slow: "Slowing Field",
+        missile: "Missile Launcher",
+        sniper: "Sniper Tower"
+      };
+      
+      upgradeTowerName.textContent = typeNames[tower.type];
+      
+      let statsText = `Level: ${tower.level}`;
+      if (tower.type !== 'slow') statsText += ` | Damage: ${Math.round(tower.damage)}`;
+      statsText += ` | Range: ${Math.round(tower.range/dpr)}`;
+      if (tower.type !== 'slow') statsText += ` | Speed: ${tower.fireRate.toFixed(1)}/s`;
+      if (tower.type === 'slow') statsText += ` | Slow: ${Math.round(tower.slowAmount * 100)}%`;
+      if (tower.type === 'missile') statsText += ` | Splash: ${Math.round(tower.splashRadius/dpr)}`;
+      if (tower.type === 'sniper') statsText += ` | Penetration: ${tower.penetration}`;
+      
+      upgradeTowerStats.textContent = statsText;
+      
+      // Update upgrade costs
+      upgradeDamageCost.textContent = Math.round(50 * tower.damageLevel);
+      upgradeRangeCost.textContent = Math.round(40 * tower.rangeLevel);
+      upgradeSpeedCost.textContent = Math.round(60 * tower.speedLevel);
+      
+      // Handle special upgrades
+      if (tower.type === 'missile' || tower.type === 'sniper') {
+        specialUpgradeBtn.classList.remove('hidden');
+        specialUpgradeCost.textContent = Math.round(100 * (tower.specialLevel + 1));
+        
+        if (tower.type === 'missile') {
+          specialUpgradeName.textContent = tower.specialLevel < 3 ? 'Increase Splash' : 'Max Splash';
+        } else if (tower.type === 'sniper') {
+          specialUpgradeName.textContent = tower.specialLevel < 3 ? 'Increase Penetration' : 'Max Penetration';
+        }
+      } else {
+        specialUpgradeBtn.classList.add('hidden');
+      }
+      
+      // Update sell value (50% of total investment)
+      const totalInvestment = TOWER_COST[tower.type] + 
+        (tower.damageLevel - 1) * 50 + 
+        (tower.rangeLevel - 1) * 40 + 
+        (tower.speedLevel - 1) * 60 +
+        tower.specialLevel * 100;
+      sellValue.textContent = Math.round(totalInvestment * 0.5);
+      
+      // Show the panel
+      upgradePanel.classList.add("open");
+    }
+
+    function upgradeTower(stat) {
+      if (!selectedTower) return;
+      
+      let cost = 0;
+      switch(stat) {
+        case 'damage':
+          cost = 50 * selectedTower.damageLevel;
+          if (money < cost) return;
+          selectedTower.damageLevel++;
+          if (selectedTower.type !== 'slow') {
+            selectedTower.damage = selectedTower.baseDamage * (1 + (selectedTower.damageLevel - 1) * 0.25);
+          }
+          break;
+        case 'range':
+          cost = 40 * selectedTower.rangeLevel;
+          if (money < cost) return;
+          selectedTower.rangeLevel++;
+          selectedTower.range = selectedTower.baseRange * (1 + (selectedTower.rangeLevel - 1) * 0.2);
+          break;
+        case 'speed':
+          cost = 60 * selectedTower.speedLevel;
+          if (money < cost) return;
+          selectedTower.speedLevel++;
+          if (selectedTower.type !== 'slow') {
+            selectedTower.fireRate = selectedTower.baseFireRate * (1 + (selectedTower.speedLevel - 1) * 0.2);
+          } else {
+            selectedTower.slowAmount = Math.min(0.8, selectedTower.baseSlowAmount * (1 + (selectedTower.speedLevel - 1) * 0.15));
+          }
+          break;
+        case 'special':
+          if (selectedTower.type !== 'missile' && selectedTower.type !== 'sniper') return;
+          cost = 100 * (selectedTower.specialLevel + 1);
+          if (money < cost || selectedTower.specialLevel >= 3) return;
+          selectedTower.specialLevel++;
+          
+          if (selectedTower.type === 'missile') {
+            selectedTower.splashRadius = selectedTower.baseSplashRadius * (1 + selectedTower.specialLevel * 0.3);
+          } else if (selectedTower.type === 'sniper') {
+            selectedTower.penetration = selectedTower.basePenetration + selectedTower.specialLevel;
+          }
+          break;
+      }
+      
+      money -= cost;
+      selectedTower.level = Math.max(selectedTower.damageLevel, selectedTower.rangeLevel, selectedTower.speedLevel, selectedTower.specialLevel);
+      updateHUD();
+      updateUpgradePanel(selectedTower);
+    }
+
+    function sellTower() {
+      if (!selectedTower) return;
+      
+      // Calculate sell value (50% of total investment)
+      const totalInvestment = TOWER_COST[selectedTower.type] + 
+        (selectedTower.damageLevel - 1) * 50 + 
+        (selectedTower.rangeLevel - 1) * 40 + 
+        (selectedTower.speedLevel - 1) * 60 +
+        selectedTower.specialLevel * 100;
+      const sellValue = Math.round(totalInvestment * 0.5);
+      
+      money += sellValue;
+      
+      // Remove the tower
+      const index = towers.indexOf(selectedTower);
+      if (index !== -1) {
+        towers.splice(index, 1);
+      }
+      
+      selectedTower = null;
+      upgradePanel.classList.remove("open");
+      updateHUD();
+    }
+
+    canvas.addEventListener("click", (e) => {
+      if (!gameRunning) return;
+      const pos = worldPosFromEvent(e);
+      
+      // Check if clicking on an existing tower
+      const clickedTower = isTowerAtPos(pos);
+      if (clickedTower) {
+        updateUpgradePanel(clickedTower);
+        return;
+      }
+      
+      // Otherwise, place a new tower
+      addTower(pos, selectedTowerType);
+    });
+
+    canvas.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      if (!gameRunning) return;
+      
+      const pos = worldPosFromEvent(e);
+      const clickedTower = isTowerAtPos(pos);
+      updateUpgradePanel(clickedTower);
+    });
+
+    // Add keyboard shortcuts for tower selection
+    document.addEventListener("keydown", (e) => {
+      if (!gameRunning) return;
+      
+      if (e.key >= '1' && e.key <= '5') {
+        const index = parseInt(e.key) - 1;
+        if (index < towerButtons.length) {
+          towerButtons.forEach(b => b.classList.remove("active"));
+          towerButtons[index].classList.add("active");
+          selectedTowerType = towerButtons[index].dataset.tower;
+          upgradePanel.classList.remove("open");
+          selectedTower = null;
+        }
+      }
+      
+      // Space to start wave
+      if (e.key === ' ' && !waveActive) {
+        startWave();
+        e.preventDefault();
+      }
+    });
+
+    towerButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        towerButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedTowerType = btn.dataset.tower;
+        upgradePanel.classList.remove("open");
+        selectedTower = null;
+      });
+    });
+
+    retryBtn.addEventListener("click", () => {
+      resetGame();
+    });
+
+    // Upgrade button event listeners
+    upgradeDamageBtn.addEventListener("click", () => upgradeTower('damage'));
+    upgradeRangeBtn.addEventListener("click", () => upgradeTower('range'));
+    upgradeSpeedBtn.addEventListener("click", () => upgradeTower('speed'));
+    specialUpgradeBtn.addEventListener("click", () => upgradeTower('special'));
+    sellTowerBtn.addEventListener("click", sellTower);
+
+    function gameOver() {
+      gameRunning = false;
+      gameOverEl.classList.remove("pointer-events-none");
+      gameOverEl.classList.remove("opacity-0");
+      gameOverEl.classList.add("opacity-100");
+    }
+
+    // Particles
+    function spawnParticles(x, y, color, count = 10, size = 2.2) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 40 + Math.random() * 80;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 0.4 + Math.random() * 0.3,
+          age: 0,
+          color,
+          size
+        });
+      }
+    }
+
+    function updateParticles(dt) {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.age += dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vx *= 0.96;
+        p.vy *= 0.96;
+        if (p.age >= p.life) {
+          particles.splice(i, 1);
+        }
+      }
+    }
+
+    function drawParticles() {
+      particles.forEach(p => {
+        const t = 1 - p.age / p.life;
+        ctx.globalAlpha = t * 0.9;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x / dpr, p.y / dpr, p.size * t, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+    }
+
+    // Enemy update
+    function updateEnemies(dt) {
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        const e = enemies[i];
+        e.slowFactor = 1; // reset; towers will reapply
+
+        const current = path[e.pathIndex];
+        const next = path[e.pathIndex + 1];
+        if (!next) {
+          // reached end
+          enemies.splice(i, 1);
+          lives -= e.type === 'boss' ? 3 : 1;
+          updateHUD();
+          if (lives <= 0) gameOver();
+          continue;
+        }
+
+        const dx = next.x - current.x;
+        const dy = next.y - current.y;
+        const segLen = Math.sqrt(dx * dx + dy * dy) || 1;
+        const speed = e.speed * e.slowFactor;
+        const move = speed * dt;
+        const advance = move / segLen;
+
+        e.t += advance;
+        if (e.t >= 1) {
+          e.pathIndex++;
+          e.t = 0;
+          e.x = next.x;
+          e.y = next.y;
+        } else {
+          e.x = current.x + dx * e.t;
+          e.y = current.y + dy * e.t;
+        }
+      }
+
+      if (enemies.length === 0 && enemiesToSpawn <= 0 && waveActive) {
+        nextWave();
+      }
+    }
+
+    // Projectiles
+    function updateProjectiles(dt) {
+      for (let i = projectiles.length - 1; i >= 0; i--) {
+        const p = projectiles[i];
+        
+        if (p.type === "missile") {
+          // Missiles follow a target
+          if (p.target && p.target.hp > 0) {
+            const dx = p.target.x - p.x;
+            const dy = p.target.y - p.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const speed = 180 * dpr;
+            
+            if (dist < 5 * dpr) {
+              // Hit target - explode
+              explodeMissile(p);
+              projectiles.splice(i, 1);
+              continue;
+            }
+            
+            p.vx = (dx / dist) * speed;
+            p.vy = (dy / dist) * speed;
+          }
+          
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.life -= dt;
+          if (p.life <= 0) {
+            explodeMissile(p);
+            projectiles.splice(i, 1);
+            continue;
+          }
+        } else if (p.type === "beam") {
+          // Beam is just a visual effect
+          p.life -= dt;
+          if (p.life <= 0) {
+            projectiles.splice(i, 1);
+            continue;
+          }
+        } else {
+          // Standard projectile movement
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.life -= dt;
+          if (p.life <= 0) {
+            projectiles.splice(i, 1);
+            continue;
+          }
+
+          // collision
+          for (let j = enemies.length - 1; j >= 0; j--) {
+            const e = enemies[j];
+            if (distance(p, e) < 12 * dpr * e.scale) {
+              e.hp -= p.damage;
+              spawnParticles(e.x, e.y, p.color, 5, 2.5);
+              
+              // Handle penetration
+              if (!p.penetration || p.penetration <= 1) {
+                projectiles.splice(i, 1);
+              } else {
+                p.penetration--;
+              }
+              
+              if (e.hp <= 0) {
+                money += e.reward;
+                updateHUD();
+                enemies.splice(j, 1);
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    function explodeMissile(missile) {
+      const tower = missile.source;
+      spawnParticles(missile.x, missile.y, "rgba(234,179,8,0.9)", 20, 3.0);
+      
+      // Damage all enemies in splash radius
+      for (let j = enemies.length - 1; j >= 0; j--) {
+        const e = enemies[j];
+        const dist = distance(missile, e);
+        if (dist <= tower.splashRadius) {
+          // Reduced damage based on distance
+          const damageFactor = 1 - (dist / tower.splashRadius) * 0.5;
+          e.hp -= tower.damage * damageFactor;
+          
+          if (e.hp <= 0) {
+            money += e.reward;
+            updateHUD();
+            enemies.splice(j, 1);
+          }
+        }
+      }
+    }
+
+    // Towers
+    function updateTowers(dt) {
+      towers.forEach(t => {
+        t.cooldown -= dt;
+        if (t.type === "slow") {
+          // apply slow aura
+          enemies.forEach(e => {
+            if (distance(t, e) <= t.range) {
+              e.slowFactor = Math.min(e.slowFactor, t.slowAmount);
+            }
+          });
+          return;
+        }
+
+        if (t.cooldown > 0) return;
+
+        // find target based on tower type
+        let target = null;
+        let bestProgress = -1;
+        
+        enemies.forEach(e => {
+          const d = distance(t, e);
+          if (d <= t.range) {
+            const progress = e.pathIndex + e.t;
+            
+            // Sniper towers target the enemy with most health
+            if (t.type === "sniper") {
+              if (!target || e.hp > target.hp) {
+                target = e;
+              }
+            } 
+            // Other towers target the enemy that's furthest along
+            else if (progress > bestProgress) {
+              bestProgress = progress;
+              target = e;
+            }
+          }
+        });
+
+        if (!target) return;
+
+        if (t.type === "pulse") {
+          const angle = Math.atan2(target.y - t.y, target.x - t.x);
+          const speed = 260 * dpr;
+          projectiles.push({
+            x: t.x,
+            y: t.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1.2,
+            damage: t.damage,
+            type: "pulse",
+            color: "rgba(129,140,248,0.9)"
+          });
+          t.cooldown = 1 / t.fireRate;
+        } else if (t.type === "beam") {
+          // instant damage + beam visual
+          target.hp -= t.damage;
+          spawnParticles(target.x, target.y, "rgba(129,140,248,0.9)");
+          // store a short-lived beam effect as projectile-like
+          projectiles.push({
+            x: t.x,
+            y: t.y,
+            tx: target.x,
+            ty: target.y,
+            life: 0.08,
+            type: "beam",
+          });
+          if (target.hp <= 0) {
+            money += target.reward;
+            updateHUD();
+            const idx = enemies.indexOf(target);
+            if (idx >= 0) enemies.splice(idx, 1);
+          }
+          t.cooldown = 1 / t.fireRate;
+        } else if (t.type === "missile") {
+          const angle = Math.atan2(target.y - t.y, target.x - t.x);
+          const speed = 120 * dpr;
+          projectiles.push({
+            x: t.x,
+            y: t.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 3.0,
+            damage: t.demage,
+            type: "missile",
+            target: target,
+            source: t,
+            color: "rgba(234,179,8,0.9)"
+          });
+          t.cooldown = 1 / t.fireRate;
+        } else if (t.type === "sniper") {
+          const angle = Math.atan2(target.y - t.y, target.x - t.x);
+          const speed = 400 * dpr;
+          projectiles.push({
+            x: t.x,
+            y: t.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1.5,
+            damage: t.damage,
+            type: "sniper",
+            penetration: t.penetration,
+            color: "rgba(239,68,68,0.9)"
+          });
+          t.cooldown = 1 / t.fireRate;
+        }
+      });
+    }
+
+    function drawPath() {
+      ctx.save();
+      ctx.lineWidth = 10 * dpr; // Fixed: use dpr to ensure consistent width
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "rgba(148,163,184,0.35)";
+      ctx.beginPath();
+      for (let i = 0; i < path.length; i++) {
+        const p = path[i];
+        const x = p.x / dpr;
+        const y = p.y / dpr;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawEnemies() {
+      enemies.forEach(e => {
+        const x = e.x / dpr;
+        const y = e.y / dpr;
+        const size = 18 * e.scale;
+
+        // glow
+        const grd = ctx.createRadialGradient(x, y, 0, x, y, size);
+        grd.addColorStop(0, e.color + "CC");
+        grd.addColorStop(1, e.color + "00");
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // core
+        ctx.fillStyle = e.color;
+        ctx.beginPath();
+        ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // HP bar
+        const w = 28 * e.scale;
+        const h = 4;
+        const hpRatio = e.hp / e.maxHp;
+        ctx.fillStyle = "rgba(15,23,42,0.9)";
+        ctx.fillRect(x - w / 2, y - size - 6, w, h);
+        ctx.fillStyle = "#22c55e";
+        ctx.fillRect(x - w / 2, y - size - 6, w * hpRatio, h);
+        
+        // Boss indicator
+        if (e.type === 'boss') {
+          ctx.strokeStyle = "#dc2626";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, size + 3, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      });
+    }
+
+    function drawTowers() {
+      towers.forEach(t => {
+        const x = t.x / dpr;
+        const y = t.y / dpr;
+
+        // range (subtle)
+        ctx.save();
+        ctx.strokeStyle = "rgba(99,102,241,0.08)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, t.range / dpr, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // base
+        ctx.save();
+        const size = 16;
+        let color1 = "rgba(129,140,248,1)";
+        let color2 = "rgba(79,70,229,0.1)";
+        
+        if (t.type === "missile") {
+          color1 = "rgba(234,179,8,1)";
+          color2 = "rgba(234,179,8,0.1)";
+        } else if (t.type === "sniper") {
+          color1 = "rgba(239,68,68,1)";
+          color2 = "rgba(239,68,68,0.1)";
+        }
+        
+        const grd = ctx.createRadialGradient(x, y, 0, x, y, size);
+        grd.addColorStop(0, color1);
+        grd.addColorStop(1, color2);
+        ctx.fillStyle = grd;
+        ctx.strokeStyle = color1 + "CC";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(x - size / 2, y - size / 2, size, size, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // type indicator
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "8px 'Space Mono'";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        let label = "P";
+        if (t.type === "beam") label = "B";
+        else if (t.type === "slow") label = "S";
+        else if (t.type === "missile") label = "M";
+        else if (t.type === "sniper") label = "N";
+        ctx.fillText(label, x, y + 0.5);
+        
+        // level indicator for upgraded towers
+        if (t.level > 1) {
+          ctx.fillStyle = "#fbbf24";
+          ctx.font = "6px 'Space Mono'";
+          ctx.fillText(t.level.toString(), x, y - 6);
+        }
+        
+        ctx.restore();
+      });
+    }
+
+    function drawProjectiles() {
+      projectiles.forEach(p => {
+    if (p.type === "beam") {
+      const x1 = p.x / dpr;
+      const y1 = p.y / dpr;
+      const x2 = p.tx / dpr;
+      const y2 = p.ty / dpr;
+
+      ctx.save();
+      const alpha = Math.max(0, p.life / 0.08);
+      ctx.strokeStyle = `rgba(129,140,248,${0.7 * alpha})`;
+      ctx.lineWidth = 3;
+      ctx.shadowColor = "rgba(129,140,248,0.9)";
+      ctx.shadowBlur = 12;
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.restore();
+
+    } else if (p.type === "missile") {
+      const x = p.x / dpr;
+      const y = p.y / dpr;
+
+      ctx.save();
+      const alpha = Math.max(0, p.life / 3.0);
+      ctx.globalAlpha = alpha;
+
+      ctx.fillStyle = p.color || "rgba(234,179,8,1)";
+      ctx.shadowColor = "rgba(234,179,8,0.9)";
+      ctx.shadowBlur = 8;
+
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // missile trail
+      ctx.strokeStyle = "rgba(234,179,8,0.5)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x - p.vx * 0.02, y - p.vy * 0.02);
+      ctx.lineTo(x - p.vx * 0.05, y - p.vy * 0.05);
+      ctx.stroke();
+
+      ctx.restore();
+
+    } else {
+      const x = p.x / dpr;
+      const y = p.y / dpr;
+
+      ctx.save();
+      const alpha = Math.max(0, p.life / 1.2);
+      ctx.globalAlpha = alpha;
+
+      ctx.fillStyle = p.color || "#ffffff";
+      ctx.shadowColor = p.color || "#ffffff";
+      ctx.shadowBlur = 8;
+
+      ctx.beginPath();
+      ctx.arc(x, y, p.type === "sniper" ? 5 : 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+  });
+}
+
+
+    function drawBackground() {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // subtle tech grid
+      ctx.save();
+      ctx.strokeStyle = "rgba(30,64,175,0.12)";
+      ctx.lineWidth = 0.5;
+      const step = 32;
+      for (let x = 0; x < canvas.width; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function update(dt) {
+      if (!gameRunning) return;
+
+      if (waveActive) {
+        spawnTimer += dt;
+        if (enemiesToSpawn > 0 && spawnTimer >= spawnInterval) {
+          spawnTimer -= spawnInterval;
+          spawnEnemy();
+          enemiesToSpawn--;
+        }
+      } else if (enemies.length === 0) {
+        // Auto-start next wave after a delay
+        setTimeout(startWave, 2000);
+      }
+
+      updateEnemies(dt);
+      updateTowers(dt);
+      updateProjectiles(dt);
+      updateParticles(dt);
+    }
+
+    function render() {
+      drawBackground();
+      drawPath();
+      drawProjectiles();
+      drawTowers();
+      drawEnemies();
+      drawParticles();
+    }
+
+    function loop(timestamp) {
+      const dt = Math.min(0.05, (timestamp - lastTime) / 1000);
+      lastTime = timestamp;
+      update(dt);
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    // Polyfill for roundRect if needed
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.beginPath();
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+        return this;
+      };
+    }
+
+    resetGame();
+    requestAnimationFrame((t) => {
+      lastTime = t;
+      requestAnimationFrame(loop);
+    });
+  </script>
+</body>
+</html>

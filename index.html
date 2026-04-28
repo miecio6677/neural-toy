@@ -3,128 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neural.toy | Minimal AI Grid</title>
+    <title>Neural Toybox | Indie Game Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Mono&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: black; color: white; }
-        .tech-font { font-family: 'Space Mono', monospace; }
+        :root {
+            --neural-blue: #5e9bff;
+            --neural-green: #4ade80;
+            --neural-purple: #a78bfa;
+            --neural-red: #f87171;
+        }
         
-        /* Styl dla karty gry (siatka na dole) */
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #000000;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
         .game-card {
-            aspect-ratio: 16/9; /* Wszystkie obrazki będą miały te same proporcje */
-            background-color: #050505; /* Prawie czarny, dla kontrastu */
-            border: 1px solid #1a1a1a;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 280px;
+            position: relative;
+            border-radius: 12px;
             overflow: hidden;
-        }
-        .game-card:hover {
-            border-color: white;
-            transform: scale(1.02);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
         
-        /* Styl dla tekstu na środku karty */
+        .game-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 50%, transparent 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+        
+        .game-card:hover .game-overlay {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
+        }
+        
+        .game-card:hover img {
+            transform: scale(1.05);
+        }
+        
+        .game-tag {
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        
         .game-title {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .game-card:hover .game-title {
-            opacity: 1;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            line-height: 1.2;
         }
         
-        /* Styl dla małej strzałeczki w rogu */
-        .arrow-icon {
-            opacity: 0.3;
-            transition: opacity 0.3s ease, transform 0.3s ease;
+        .game-description {
+            font-size: 0.75rem;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            line-height: 1.5;
         }
-        .game-card:hover .arrow-icon {
+        
+        .game-card:hover .game-description {
             opacity: 1;
-            transform: translate(3px, -3px);
+            max-height: 100px;
+            margin-top: 8px;
         }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--neural-green);
+            margin-right: 8px;
+            box-shadow: 0 0 8px var(--neural-green);
+        }
+        
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+        
+        .nav-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover .nav-icon {
+            transform: scale(1.15);
+        }
+        
+        .tag-defense { color: var(--neural-blue); }
+        .tag-simulation { color: var(--neural-green); }
+        .tag-arcade { color: var(--neural-purple); }
+        .tag-idle { color: var(--neural-red); }
+        .tag-puzzle { color: #2dd4bf; }
+        .tag-logic { color: #fbbf24; }
+        .tag-racing { color: #ec4899; }
+        .tag-horror { color: #94a3b8; }
+        .tag-strategy { color: #a78bfa; }
+        .tag-rhythm { color: #f472b6; }
+        .tag-rpg { color: #fdba74; }
     </style>
 </head>
-<body class="antialiased overflow-x-hidden">
-
-    <div id="app" class="flex flex-col min-h-screen">
-        
-        <header class="max-w-7xl mx-auto w-full px-6 py-12 flex justify-between items-center border-b border-white/5">
-            <div class="flex items-center gap-3">
-                <i data-lucide="folder" class="w-7 h-7 text-white/50"></i>
-                <h1 class="tech-font text-xl font-bold tracking-tighter text-white/90">
-                    NEURAL.<span class="text-white">TOY</span>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="py-8 px-6 border-b border-gray-900">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center mb-6 md:mb-0">
+                <i data-lucide="cpu" class="w-8 h-8 mr-3 text-gray-300"></i>
+                <h1 class="text-3xl md:text-4xl font-bold tracking-wider">
+                    NEURAL <span class="text-gray-400">TOYBOX</span>
                 </h1>
             </div>
-            <div class="flex items-center gap-10 text-[10px] uppercase text-white/40 tech-font tracking-[0.2em]">
-                <a href="#" class="flex flex-col items-center gap-3 hover:text-white transition-colors group">
-                    <i data-lucide="image" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
-                    Intro
-                </a>
-                <a href="#" class="flex flex-col items-center gap-3 hover:text-white transition-colors group">
-                    <i data-lucide="folder-plus" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
-                    Docs
-                </a>
-                <a href="#" class="flex flex-col items-center gap-3 hover:text-white transition-colors group">
-                    <i data-lucide="activity" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
-                    Rewards
-                </a>
+            
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                SYSTEM STATUS: ONLINE
             </div>
-        </header>
-
-        <main class="max-w-7xl mx-auto w-full px-6 py-16 flex-grow">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="game-grid">
+        </div>
+    </header>
+    
+    <!-- Navigation -->
+    <nav class="py-6 px-6 border-b border-gray-900">
+        <div class="max-w-7xl mx-auto flex justify-center space-x-12">
+            <a href="#" class="nav-link flex flex-col items-center group">
+                <i data-lucide="gamepad-2" class="w-6 h-6 mb-2 nav-icon text-gray-500 group-hover:text-white"></i>
+                <span class="text-xs uppercase tracking-widest">Games</span>
+            </a>
+            <a href="#" class="nav-link flex flex-col items-center group">
+                <i data-lucide="book-open" class="w-6 h-6 mb-2 nav-icon text-gray-500 group-hover:text-white"></i>
+                <span class="text-xs uppercase tracking-widest">Docs</span>
+            </a>
+            <a href="#" class="nav-link flex flex-col items-center group">
+                <i data-lucide="award" class="w-6 h-6 mb-2 nav-icon text-gray-500 group-hover:text-white"></i>
+                <span class="text-xs uppercase tracking-widest">Rewards</span>
+            </a>
+            <a href="#" class="nav-link flex flex-col items-center group">
+                <i data-lucide="settings" class="w-6 h-6 mb-2 nav-icon text-gray-500 group-hover:text-white"></i>
+                <span class="text-xs uppercase tracking-widest">Settings</span>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="flex-grow py-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- Game 1: Tower Defence -->
+                <a href="/Tower-Defence/" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800" alt="Cyber City">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-defense">Defense</span>
+                        <h3 class="game-title">Tower Defence</h3>
+                        <p class="game-description">Protect the core from waves of digital viruses in this cyberpunk defense challenge.</p>
+                    </div>
+                </a>
                 
-                <a href="/games/Tower-Defence-Revege/index.html" class="game-card group rounded-2xl relative flex items-center justify-center">
-                    
-                    <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=600&auto=format&fit=crop" 
-                         alt="Neural Roast AI" 
-                         class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                    
-                    <div class="absolute inset-0 bg-black/60 group-hover:bg-black/30 transition-colors duration-300"></div>
-
-                    <div class="game-title relative z-10 text-center">
-                        <span class="tech-font text-white text-[11px] uppercase tracking-[0.3em]">AI Module</span>
-                        <h3 class="text-3xl font-extrabold text-white mt-1">Neural Roast</h3>
-                    </div>
-
-                    <div class="absolute bottom-4 right-4 z-10 flex items-center gap-2 text-white/50 tech-font text-[10px] uppercase">
-                        Launch <i data-lucide="arrow-up-right" class="w-4 h-4 arrow-icon"></i>
+                <!-- Game 2: Cyber Botanist -->
+                <a href="/Cyber-Botanist/" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1530836361253-9d55a6914652?auto=format&fit=crop&q=80&w=800" alt="Neon Plants">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-simulation">Simulation</span>
+                        <h3 class="game-title">Cyber Botanist</h3>
+                        <p class="game-description">Grow digital flora in a synthetic ecosystem to maintain oxygen levels in the data realm.</p>
                     </div>
                 </a>
-
-                <div class="game-card group rounded-2xl relative flex items-center justify-center opacity-50">
-                    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" 
-                         alt="Money Printer" 
-                         class="absolute inset-0 w-full h-full object-cover grayscale">
-                    <div class="absolute inset-0 bg-black/70"></div>
-                    <div class="game-title relative z-10 text-center">
-                        <span class="tech-font text-white text-[11px] uppercase tracking-[0.3em]">Module_Locked</span>
-                        <h3 class="text-3xl font-extrabold text-white mt-1">Money Printer</h3>
+                
+                <!-- Game 3: Neural Runner -->
+                <a href="/Neural-Runner/" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1551632436-7a879920dd8f?auto=format&fit=crop&q=80&w=800" alt="Tech Lines">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-arcade">Arcade</span>
+                        <h3 class="game-title">Neural Runner</h3>
+                        <p class="game-description">Dodge firewall barriers in an endless sprint through neural pathways.</p>
                     </div>
-                </div>
-
-                <div class="game-card rounded-2xl flex flex-col items-center justify-center text-center p-8 border-dashed border-white/10 bg-transparent hover:border-white transition-all opacity-30">
-                    <i data-lucide="plus-circle" class="w-10 h-10 text-white/30 mb-4"></i>
-                    <h3 class="text-lg font-bold text-white/50">Submit Idea</h3>
-                    <p class="tech-font text-[10px] text-white/30 mt-1 uppercase tracking-widest">New Module</p>
-                </div>
-
+                </a>
+                
+                <!-- Game 4: Void Miner -->
+                <a href="/Void-Miner/" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=800" alt="Space Asteroid">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-idle">Idle</span>
+                        <h3 class="game-title">Void Miner</h3>
+                        <p class="game-description">Extract rare minerals from dead planets in the cosmic void.</p>
+                    </div>
+                </a>
+                
+                <!-- Game 5: Grid Hacker -->
+                <a href="/games/grid-hacker/" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800" alt="Green Code Matrix">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-puzzle">Puzzle</span>
+                        <h3 class="game-title">Grid Hacker</h3>
+                        <p class="game-description">Crack digital codes in a minimalist logic network.</p>
+                    </div>
+                </a>
+                
+                <!-- Game 6: Bit Flipper -->
+                <a href="/games/bit-flipper/index.html" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800" alt="Microchip">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-logic">Logic</span>
+                        <h3 class="game-title">Bit Flipper</h3>
+                        <p class="game-description">Flip bits from 0 to 1 to save the system from critical failure.</p>
+                    </div>
+                </a>
+                
+                <!-- Game 7: Neon Drift -->
+                <a href="/games/neon-drift/index.html" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=800" alt="Retro Synthwave Car">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-racing">Racing</span>
+                        <h3 class="game-title">Neon Drift</h3>
+                        <p class="game-description">Vector racing in a retro-futuristic world of glowing highways.</p>
+                    </div>
+                </a>
+                
+                <!-- Game 8: Signal Lost -->
+                <a href="/games/signal-lost/index.html" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?auto=format&fit=crop&q=80&w=800" alt="Radio Tower Fog">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-horror">Horror</span>
+                        <h3 class="game-title">Signal Lost</h3>
+                        <p class="game-description">Locate the source of a mysterious signal in the digital void.</p>
+                    </div>
+                </a>
+                
+                <!-- Game 9: Quantum Chess -->
+                <a href="/games/quantum-chess/index.html" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=800" alt="Chess Board Glitch">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-strategy">Strategy</span>
+                        <h3 class="game-title">Quantum Chess</h3>
+                        <p class="game-description">Classic chess where pieces can exist in two places simultaneously.</p>
+                    </div>
+                </a>
+                
+                <!-- Game 10: Synth Wave -->
+                <a href="/games/synth-wave/index.html" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800" alt="Audio Visualizer">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-rhythm">Rhythm</span>
+                        <h3 class="game-title">Synth Wave</h3>
+                        <p class="game-description">Tap to the beat of synthetic pulses in this audio-reactive experience.</p>
+                    </div>
+                </a>
+                
+                <!-- Game 11: Data Leak -->
+                <a href="/games/data-leak/index.html" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&q=80&w=800" alt="Server Room">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-arcade">Arcade</span>
+                        <h3 class="game-title">Data Leak</h3>
+                        <p class="game-description">Plug data leaks in a corrupted server before it crashes.</p>
+                    </div>
+                </a>
+                
+                <!-- Game 12: Alpha Core -->
+                <a href="/games/alpha-core/index.html" class="game-card">
+                    <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800" alt="AI Brain">
+                    <div class="game-overlay">
+                        <span class="game-tag tag-rpg">RPG</span>
+                        <h3 class="game-title">Alpha Core</h3>
+                        <p class="game-description">Explore the inner workings of an artificial intelligence consciousness.</p>
+                    </div>
+                </a>
             </div>
-        </main>
-
-        <footer class="max-w-7xl mx-auto w-full px-6 py-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p class="tech-font text-[10px] text-white/20 uppercase tracking-[0.3em]">© 2026 / Neural.Toy Labs</p>
-            <div class="flex gap-8 text-white/30">
-                <a href="#" class="hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
-                <a href="#" class="hover:text-white transition-colors"><i data-lucide="mail" class="w-5 h-5"></i></a>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="py-8 px-6 border-t border-gray-900">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <p class="text-xs text-gray-600 uppercase tracking-widest mb-4 md:mb-0">
+                © 2026 Neural Toybox Labs
+            </p>
+            <div class="flex space-x-6">
+                <a href="#" class="text-gray-500 hover:text-white transition-colors">
+                    <i data-lucide="github" class="w-5 h-5"></i>
+                </a>
+                <a href="#" class="text-gray-500 hover:text-white transition-colors">
+                    <i data-lucide="twitter" class="w-5 h-5"></i>
+                </a>
+                <a href="#" class="text-gray-500 hover:text-white transition-colors">
+                    <i data-lucide="mail" class="w-5 h-5"></i>
+                </a>
             </div>
-        </footer>
-
-    </div>
-
-    <script type="module" src="/main.js"></script>
+        </div>
+    </footer>
+    
     <script>
-        lucide.createIcons();
+    // Ten sposób wymusza załadowanie wszystkich dostępnych ikon
+    lucide.createIcons();
     </script>
 </body>
 </html>

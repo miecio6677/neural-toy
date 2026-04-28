@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egg Hatching & Shell Collection System</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --accent: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --gold: #f39c12;
+            --diamond: #b9f2ff;
+            --void: #8e44ad;
+            --ancient: #d35400;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a3a, #2c3e50);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: rgba(44, 62, 80, 0.8);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
+        }
+        
+        .resource-bar {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .resource {
+            display: flex;
+            align-items: center;
+            background: rgba(52, 73, 94, 0.7);
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .resource-icon {
+            font-size: 1.5rem;
+            margin-right: 8px;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: rgba(44, 62, 80, 0.8);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .tab:hover {
+            background-color: rgba(52, 152, 219, 0.2);
+        }
+        
+        .tab.active {
+            background-color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background-color: rgba(44, 62, 80, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .panel-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--secondary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 8px;
+        }
+        
+        /* Egg Panel */
+        .egg-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .egg-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            background: rgba(52, 73, 94, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--gold);
+        }
+        
+        .egg-container {
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .egg {
+            width: 180px;
+            height: 240px;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s ease;
+            background: linear-gradient(to bottom, #f9f9f9, #e0e0e0);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .egg:active {
+            transform: scale(0.97);
+        }
+        
+        .egg.golden {
+            background: linear-gradient(to bottom, #ffd700, #daa520);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+        
+        .egg.diamond {
+            background: linear-gradient(to bottom, #b9f2ff, #e6f9ff);
+            box-shadow: 0 8px 25px rgba(185, 242, 255, 0.4);
+        }
+        
+        .egg.void {
+            background: linear-gradient(to bottom, #8e44ad, #6c3483);
+            box-shadow: 0 8px 25px rgba(142, 68, 173, 0.4);
+        }
+        
+        .egg.ancient {
+            background: linear-gradient(to bottom, #d35400, #a04000);
+            box-shadow: 0 8px 25px rgba(211, 84, 0, 0.4);
+        }
+        
+        .progress-container {
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: #2c3e50;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        /* Shell Pop Animation */
+        .shell-pop {
+            position: absolute;
+            width: 30px;
+            height: 20px;
+            background-color: #f9f9f9;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            pointer-events: none;
+            animation: floatUp 2s forwards;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        @keyframes floatUp {
+            0% {
+                transform: scale(0) translateY(0);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1) translateY(-50px);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0.8) translateY(-100px);
+                opacity: 0;
+            }
+        }
+        
+        /* Upgrades Panel */
+        .upgrades-panel {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .upgrade {
+            background: rgba(52, 73, 94, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .upgrade:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .upgrade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .upgrade-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .upgrade-level {
+            background-color: var(--primary);
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .upgrade-description {
+            margin-bottom: 10px;
+            color: #bdc3c7;
+        }
+        
+        .upgrade-cost {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .buy-btn {
+            padding: 8px 15px;
+            background-color: var(--secondary);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-weight: bold;
+        }
+        
+        .buy-btn:hover:not(:disabled) {
+            background-color: #27ae60;
+        }
+        
+        .buy-btn:disabled {
+            background-color: #7f8c8d;
+            cursor: not-allowed;
+        }
+        
+        /* Processing Panel */
+        .processing-panel {
+            grid-column: 1 / -1;
+        }
+        
+        .processors {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .processor {
+            background: rgba(52, 73, 94, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .processor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .processor-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        .processor-level {
+            background-color: var(--primary);
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .processor-description {
+            margin-bottom: 10px;
+            color: #bdc3c7;
+        }
+        
+        .processor-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Tools Panel */
+        .tools-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .tool {
+            background: rgba(52, 73, 94, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+        
+        .tool:hover {
+            transform: translateY(-5px);
+        }
+        
+        .tool-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .tool-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--gold);
+        }
+        
+        .tool-level {
+            background-color: var(--primary);
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .tool-effect {
+            margin-bottom: 10px;
+            color: #bdc3c7;
+        }
+        
+        /* Pets Panel */
+        .pets-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .pet {
+            background: rgba(52, 73, 94, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+        
+        .pet:hover {
+            transform: translateY(-5px);
+        }
+        
+        .pet-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .pet-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--secondary);
+        }
+        
+        .pet-level {
+            background-color: var(--primary);
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .pet-effect {
+            margin-bottom: 10px;
+            color: #bdc3c7;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #34495e;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal h2 {
+            margin-bottom: 20px;
+            color: var(--gold);
+        }
+        
+        .modal p {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .modal-btn.evolve {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .modal-btn.later {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .resource-bar {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1 0 33%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="game-title">Idle Miner & Egg Hatcher</div>
+            <div class="resource-bar">
+                <div class="resource">
+                    <span class="resource-icon">🥚</span>
+                    <span id="egg-shells">0</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">🔶</span>
+                    <span id="pet-fragments">0</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">⛏️</span>
+                    <span id="ore-count">1.5K</span>
+                </div>
+                <div class="resource">
+                    <span class="resource-icon">⚡</span>
+                    <span id="energy-count">100</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab" data-tab="mining">Mining</div>
+            <div class="tab" data-tab="refinery">Refinery</div>
+            <div class="tab active" data-tab="egg">Egg Hatching</div>
+            <div class="tab" data-tab="processing">Shell Processing</div>
+            <div class="tab" data-tab="tools">Egg Tools</div>
+            <div class="tab" data-tab="pets">Pets</div>
+        </div>
+        
+        <div class="main-content">
+            <!-- Egg Panel -->
+            <div class="panel egg-panel">
+                <h2 class="panel-title">Egg Hatchery</h2>
+                
+                <div class="egg-stats">
+                    <div class="stat">
+                        <div>Click Power</div>
+                        <div class="stat-value" id="click-power">1</div>
+                    </div>
+                    <div class="stat">
+                        <div>Auto Pecks/s</div>
+                        <div class="stat-value" id="auto-pecks">0</div>
+                    </div>
+                    <div class="stat">
+                        <div>Eggs Hatched</div>
+                        <div class="stat-value" id="eggs-hatched">0</div>
+                    </div>
+                    <div class="stat">
+                        <div>Current Tier</div>
+                        <div class="stat-value" id="egg-tier">Basic</div>
+                    </div>
+                </div>
+                
+                <div class="egg-container">
+                    <div id="egg" class="egg"></div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Hatch Progress</span>
+                        <span id="progress-text">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="hatch-progress" class="progress"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upgrades Panel -->
+            <div class="panel">
+                <h2 class="panel-title">Egg Upgrades</h2>
+                
+                <div class="upgrades-panel" id="upgrades-container">
+                    <!-- Upgrades will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Processing Panel -->
+            <div class="panel processing-panel">
+                <h2 class="panel-title">Shell Processing</h2>
+                
+                <div class="processors" id="processors-container">
+                    <!-- Processors will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Tools Panel -->
+            <div class="panel">
+                <h2 class="panel-title">Egg Tools</h2>
+                
+                <div class="tools-panel" id="tools-container">
+                    <!-- Tools will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Pets Panel -->
+            <div class="panel">
+                <h2 class="panel-title">Pets</h2>
+                
+                <div class="pets-panel" id="pets-container">
+                    <!-- Pets will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Evolution Modal -->
+        <div id="evolution-modal" class="modal">
+            <div class="modal-content">
+                <h2>Egg Evolution Available!</h2>
+                <p id="evolution-text">You can now evolve to a Golden Egg!</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn evolve" id="evolve-btn">Evolve Now</button>
+                    <button class="modal-btn later" id="later-btn">Maybe Later</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        const gameState = {
+            // Resources
+            shells: 0,
+            shellDust: 0,
+            hardenedShells: 0,
+            crystalShells: 0,
+            prismaticShells: 0,
+            voidShells: 0,
+            ancientCores: 0,
+            petFragments: 0,
+            energy: 100,
+            ore: 1500,
+            
+            // Egg state
+            eggsHatched: 0,
+            currentEggTier: 0,
+            hatchProgress: 0,
+            
+            // Upgrades
+            upgrades: {
+                clickPower: 0,
+                autoPecker: 0,
+                shellHardness: 0,
+                incubatorSpeed: 0,
+                luckFactor: 0
+            },
+            
+            // Tools
+            tools: {
+                woodenPecker: 0,
+                ironBeak: 0,
+                titaniumTalon: 0,
+                plasmaBeak: 0,
+                quantumClaw: 0,
+                voidHarvester: 0
+            },
+            
+            // Pets
+            pets: {
+                shellSprite: 0,
+                crystalSprite: 0,
+                prismaticSprite: 0,
+                voidSprite: 0,
+                ancientGuardian: 0
+            },
+            
+            // Processors
+            processors: {
+                grinder: 0,
+                compressor: 0,
+                crystalizer: 0,
+                prismForge: 0,
+                ancientSynthesizer: 0
+            }
+        };
+
+        // Game constants
+        const EGG_TIERS = [
+            { name: "Basic", hatchRequirement: 100, baseReward: 100, evolutionThreshold: 5 },
+            { name: "Golden", hatchRequirement: 250, baseReward: 500, evolutionThreshold: 15 },
+            { name: "Diamond", hatchRequirement: 500, baseReward: 2000, evolutionThreshold: 30 },
+            { name: "Void", hatchRequirement: 1000, baseReward: 8000, evolutionThreshold: 50 },
+            { name: "Ancient", hatchRequirement: 2000, baseReward: 25000, evolutionThreshold: 100 },
+            { name: "Prismatic", hatchRequirement: 5000, baseReward: 100000, evolutionThreshold: 200 },
+            { name: "Singularity", hatchRequirement: 10000, baseReward: 500000, evolutionThreshold: Infinity }
+        ];
+
+        const UPGRADES = {
+            clickPower: {
+                name: "Click Power",
+                description: "Increases shells gained per click",
+                baseCost: 10,
+                costMultiplier: 1.5,
+                effect: level => 0.2 * level
+            },
+            autoPecker: {
+                name: "Auto-Pecker",
+                description: "Automatically clicks the egg at regular intervals",
+                baseCost: 50,
+                costMultiplier: 2,
+                effect: level => 0.1 * level
+            },
+            shellHardness: {
+                name: "Shell Hardness",
+                description: "Increases the value of all shell gains",
+                baseCost: 100,
+                costMultiplier: 1.8,
+                effect: level => 0.1 * level
+            },
+            incubatorSpeed: {
+                name: "Incubator Speed",
+                description: "Reduces clicks required to hatch eggs",
+                baseCost: 200,
+                costMultiplier: 1.7,
+                effect: level => Math.min(0.02 * level, 0.9)
+            },
+            luckFactor: {
+                name: "Luck Factor",
+                description: "Increases chance of rare drops when hatching",
+                baseCost: 300,
+                costMultiplier: 1.6,
+                effect: level => 0.1 * level
+            }
+        };
+
+        const TOOLS = {
+            woodenPecker: {
+                name: "Wooden Pecker",
+                icon: "🔨",
+                description: "Basic egg tool",
+                baseCost: 100,
+                costMultiplier: 2,
+                effect: level => 0.1 * level
+            },
+            ironBeak: {
+                name: "Iron Beak",
+                icon: "⚒️",
+                description: "Better than wood",
+                baseCost: 500,
+                costMultiplier: 2.2,
+                effect: level => 0.2 * level
+            },
+            titaniumTalon: {
+                name: "Titanium Talon",
+                icon: "🔧",
+                description: "Sharp and efficient",
+                baseCost: 2000,
+                costMultiplier: 2.5,
+                effect: level => 0.3 * level
+            },
+            plasmaBeak: {
+                name: "Plasma Beak",
+                icon: "🔌",
+                description: "Advanced energy tool",
+                baseCost: 10000,
+                costMultiplier: 3,
+                effect: level => 0.5 * level
+            },
+            quantumClaw: {
+                name: "Quantum Claw",
+                icon: "⚛️",
+                description: "Uses quantum mechanics",
+                baseCost: 50000,
+                costMultiplier: 3.5,
+                effect: level => 0.8 * level
+            },
+            voidHarvester: {
+                name: "Void Harvester",
+                icon: "🕳️",
+                description: "Harvests from the void",
+                baseCost: 200000,
+                costMultiplier: 4,
+                effect: level => 1.2 * level
+            }
+        };
+
+        const PETS = {
+            shellSprite: {
+                name: "Shell Sprite",
+                icon: "🐚",
+                description: "+5% Shell gain",
+                baseCost: 10,
+                costMultiplier: 1.5,
+                effect: level => 0.05 * level
+            },
+            crystalSprite: {
+                name: "Crystal Sprite",
+                icon: "🔮",
+                description: "+10% Shell gain, +2% rare drop chance",
+                baseCost: 50,
+                costMultiplier: 1.8,
+                effect: level => ({
+                    shellGain: 0.1 * level,
+                    dropChance: 0.02 * level
+                })
+            },
+            prismaticSprite: {
+                name: "Prismatic Sprite",
+                icon: "🌈",
+                description: "+20% Shell gain, +5% rare drop chance",
+                baseCost: 200,
+                costMultiplier: 2,
+                effect: level => ({
+                    shellGain: 0.2 * level,
+                    dropChance: 0.05 * level
+                })
+            },
+            voidSprite: {
+                name: "Void Sprite",
+                icon: "🌌",
+                description: "+30% Shell gain, +10% rare drop chance, +5% Mining speed",
+                baseCost: 1000,
+                costMultiplier: 2.2,
+                effect: level => ({
+                    shellGain: 0.3 * level,
+                    dropChance: 0.1 * level,
+                    miningSpeed: 0.05 * level
+                })
+            },
+            ancientGuardian: {
+                name: "Ancient Shell Guardian",
+                icon: "🐉",
+                description: "+50% Shell gain, +15% rare drop chance, +10% Mining speed, +5% Refinery speed",
+                baseCost: 5000,
+                costMultiplier: 2.5,
+                effect: level => ({
+                    shellGain: 0.5 * level,
+                    dropChance: 0.15 * level,
+                    miningSpeed: 0.1 * level,
+                    refinerySpeed: 0.05 * level
+                })
+            }
+        };
+
+        const PROCESSORS = {
+            grinder: {
+                name: "Shell Grinder",
+                description: "Converts Basic Shells → Shell Dust",
+                baseCost: 200,
+                costMultiplier: 1.5,
+                baseConversion: 0.1,
+                effect: level => 0.01 * level
+            },
+            compressor: {
+                name: "Shell Compressor",
+                description: "Shell Dust → Hardened Shells",
+                baseCost: 500,
+                costMultiplier: 1.7,
+                baseConversion: 0.05,
+                effect: level => 0.008 * level
+            },
+            crystalizer: {
+                name: "Crystalizer",
+                description: "Hardened Shells → Crystal Shells",
+                baseCost: 1000,
+                costMultiplier: 1.8,
+                baseConversion: 0.03,
+                effect: level => 0.006 * level
+            },
+            prismForge: {
+                name: "Prism Forge",
+                description: "Crystal Shells + Void Shells → Prismatic Shells",
+                baseCost: 3000,
+                costMultiplier: 2,
+                baseConversion: 0.02,
+                effect: level => 0.005 * level
+            },
+            ancientSynthesizer: {
+                name: "Ancient Core Synthesizer",
+                description: "Prismatic Shells + Pet Fragments → Ancient Shell Cores",
+                baseCost: 10000,
+                costMultiplier: 2.2,
+                baseConversion: 0.01,
+                effect: level => 0.003 * level
+            }
+        };
+
+        // DOM Elements
+        const eggElement = document.getElementById('egg');
+        const eggShellsElement = document.getElementById('egg-shells');
+        const petFragmentsElement = document.getElementById('pet-fragments');
+        const hatchProgressElement = document.getElementById('hatch-progress');
+        const progressTextElement = document.getElementById('progress-text');
+        const clickPowerElement = document.getElementById('click-power');
+        const autoPecksElement = document.getElementById('auto-pecks');
+        const eggsHatchedElement = document.getElementById('eggs-hatched');
+        const eggTierElement = document.getElementById('egg-tier');
+        const upgradesContainer = document.getElementById('upgrades-container');
+        const toolsContainer = document.getElementById('tools-container');
+        const petsContainer = document.getElementById('pets-container');
+        const processorsContainer = document.getElementById('processors-container');
+        const evolutionModal = document.getElementById('evolution-modal');
+        const evolutionText = document.getElementById('evolution-text');
+        const evolveBtn = document.getElementById('evolve-btn');
+        const laterBtn = document.getElementById('later-btn');
+        const tabs = document.querySelectorAll('.tab');
+
+        // Initialize the game
+        function init() {
+            loadGame();
+            setupEventListeners();
+            renderUpgrades();
+            renderTools();
+            renderPets();
+            renderProcessors();
+            updateUI();
+            
+            // Start auto-pecker if applicable
+            if (gameState.upgrades.autoPecker > 0) {
+                startAutoPecker();
+            }
+            
+            // Start processing if applicable
+            startProcessing();
+            
+            // Start energy regeneration
+            startEnergyRegeneration();
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Egg click
+            eggElement.addEventListener('click', handleEggClick);
+            
+            // Tab switching
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+            
+            // Evolution modal buttons
+            evolveBtn.addEventListener('click', evolveEgg);
+            laterBtn.addEventListener('click', () => {
+                evolutionModal.style.display = 'none';
+            });
+        }
+
+        // Handle egg click
+        function handleEggClick() {
+            const shellsPerClick = calculateShellsPerClick();
+            
+            // Add shells
+            addShells(shellsPerClick);
+            
+            // Increase hatch progress
+            const requiredClicks = calculateRequiredClicks();
+            gameState.hatchProgress += 1;
+            
+            // Update progress bar
+            updateProgressBar();
+            
+            // Spawn shell visual effect with random chance
+            if (Math.random() < 0.3) {
+                spawnShellEffect();
+            }
+            
+            // Check if egg should hatch
+            if (gameState.hatchProgress >= requiredClicks) {
+                hatchEgg();
+            }
+            
+            updateUI();
+            saveGame();
+        }
+
+        // Calculate shells per click
+        function calculateShellsPerClick() {
+            const currentTier = EGG_TIERS[gameState.currentEggTier];
+            const base = currentTier.baseReward / currentTier.hatchRequirement;
+            const clickPowerBonus = UPGRADES.clickPower.effect(gameState.upgrades.clickPower);
+            const shellHardnessBonus = UPGRADES.shellHardness.effect(gameState.upgrades.shellHardness);
+            
+            // Calculate tool bonuses
+            let toolBonus = 0;
+            for (const tool of Object.values(gameState.tools)) {
+                toolBonus += tool;
+            }
+            
+            // Calculate pet bonuses
+            let petBonus = 0;
+            if (gameState.pets.shellSprite > 0) petBonus += PETS.shellSprite.effect(gameState.pets.shellSprite);
+            if (gameState.pets.crystalSprite > 0) petBonus += PETS.crystalSprite.effect(gameState.pets.crystalSprite).shellGain;
+            if (gameState.pets.prismaticSprite > 0) petBonus += PETS.prismaticSprite.effect(gameState.pets.prismaticSprite).shellGain;
+            if (gameState.pets.voidSprite > 0) petBonus += PETS.voidSprite.effect(gameState.pets.voidSprite).shellGain;
+            if (gameState.pets.ancientGuardian > 0) petBonus += PETS.ancientGuardian.effect(gameState.pets.ancientGuardian).shellGain;
+            
+            return base * (1 + clickPowerBonus) * (1 + shellHardnessBonus) * (1 + toolBonus) * (1 + petBonus);
+        }
+
+        // Calculate required clicks to hatch
+        function calculateRequiredClicks() {
+            const currentTier = EGG_TIERS[gameState.currentEggTier];
+            const base = currentTier.hatchRequirement;
+            const incubatorBonus = UPGRADES.incubatorSpeed.effect(gameState.upgrades.incubatorSpeed);
+            
+            return Math.max(base * (1 - incubatorBonus), base * 0.1);
+        }
+
+        // Add shells to player's balance
+        function addShells(amount) {
+            gameState.shells += amount;
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            const requiredClicks = calculateRequiredClicks();
+            const progressPercent = (gameState.hatchProgress / requiredClicks) * 100;
+            hatchProgressElement.style.width = `${Math.min(progressPercent, 100)}%`;
+            progressTextElement.textContent = `${Math.round(progressPercent)}%`;
+        }
+
+        // Spawn shell visual effect
+        function spawnShellEffect() {
+            const shell = document.createElement('div');
+            shell.className = 'shell-pop';
+            
+            // Random position around the egg
+            const eggRect = eggElement.getBoundingClientRect();
+            const eggCenterX = eggRect.left + eggRect.width / 2;
+            const eggCenterY = eggRect.top + eggRect.height / 2;
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = eggRect.width / 2;
+            
+            shell.style.left = `${eggCenterX + Math.cos(angle) * distance - 15}px`;
+            shell.style.top = `${eggCenterY + Math.sin(angle) * distance - 10}px`;
+            
+            document.body.appendChild(shell);
+            
+            // Remove element after animation completes
+            setTimeout(() => {
+                document.body.removeChild(shell);
+            }, 2000);
+        }
+
+        // Hatch the egg
+        function hatchEgg() {
+            const currentTier = EGG_TIERS[gameState.currentEggTier];
+            
+            // Grant hatch reward
+            const hatchReward = currentTier.baseReward * (1 + UPGRADES.shellHardness.effect(gameState.upgrades.shellHardness));
+            addShells(hatchReward);
+            
+            // Check for rare drops
+            const baseDropChance = 0.05;
+            const luckBonus = UPGRADES.luckFactor.effect(gameState.upgrades.luckFactor);
+            
+            // Calculate pet bonuses to drop chance
+            let petDropBonus = 0;
+            if (gameState.pets.crystalSprite > 0) petDropBonus += PETS.crystalSprite.effect(gameState.pets.crystalSprite).dropChance;
+            if (gameState.pets.prismaticSprite > 0) petDropBonus += PETS.prismaticSprite.effect(gameState.pets.prismaticSprite).dropChance;
+            if (gameState.pets.voidSprite > 0) petDropBonus += PETS.voidSprite.effect(gameState.pets.voidSprite).dropChance;
+            if (gameState.pets.ancientGuardian > 0) petDropBonus += PETS.ancientGuardian.effect(gameState.pets.ancientGuardian).dropChance;
+            
+            const dropChance = baseDropChance * (1 + luckBonus) * (1 + petDropBonus);
+            
+            if (Math.random() < dropChance) {
+                gameState.petFragments += 1;
+                // Show notification
+                showNotification("Pet Fragment obtained!");
+            }
+            
+            // Update stats
+            gameState.eggsHatched += 1;
+            gameState.hatchProgress = 0;
+            
+            // Check for evolution
+            checkEvolution();
+            
+            updateUI();
+            saveGame();
+        }
+
+        // Check if evolution is available
+        function checkEvolution() {
+            const currentTier = gameState.currentEggTier;
+            
+            // Check if we're not at the max tier and have reached the threshold
+            if (currentTier < EGG_TIERS.length - 1 && 
+                gameState.eggsHatched >= EGG_TIERS[currentTier].evolutionThreshold) {
+                
+                // Show evolution modal
+                evolutionText.textContent = `You can now evolve to a ${EGG_TIERS[currentTier + 1].name} Egg!`;
+                evolutionModal.style.display = 'flex';
+            }
+        }
+
+        // Evolve to next egg tier
+        function evolveEgg() {
+            if (gameState.currentEggTier < EGG_TIERS.length - 1) {
+                gameState.currentEggTier += 1;
+                updateEggAppearance();
+                evolutionModal.style.display = 'none';
+                updateUI();
+                saveGame();
+            }
+        }
+
+        // Update egg appearance based on tier
+        function updateEggAppearance() {
+            const tierNames = ['', 'golden', 'diamond', 'void', 'ancient', 'prismatic', 'singularity'];
+            eggElement.className = `egg ${tierNames[gameState.currentEggTier]}`;
+        }
+
+        // Start auto-pecker
+        function startAutoPecker() {
+            // Clear any existing interval
+            if (window.autoPeckerInterval) {
+                clearInterval(window.autoPeckerInterval);
+            }
+            
+            // Calculate clicks per second
+            const cps = UPGRADES.autoPecker.effect(gameState.upgrades.autoPecker);
+            
+            if (cps > 0) {
+                // Set up interval for auto clicks
+                window.autoPeckerInterval = setInterval(() => {
+                    handleEggClick();
+                }, 1000 / cps);
+            }
+        }
+
+        // Start processing
+        function startProcessing() {
+            // Clear any existing interval
+            if (window.processingInterval) {
+                clearInterval(window.processingInterval);
+            }
+            
+            // Set up interval for processing
+            window.processingInterval = setInterval(() => {
+                processResources();
+            }, 1000);
+        }
+
+        // Process resources
+        function processResources() {
+            // Only process if we have energy
+            if (gameState.energy <= 0) return;
+            
+            // Shell Grinder - Convert Shells to Shell Dust
+            if (gameState.processors.grinder > 0 && gameState.shells >= 10) {
+                const conversionRate = PROCESSORS.grinder.baseConversion + PROCESSORS.grinder.effect(gameState.processors.grinder);
+                const amount = Math.min(gameState.shells, 10) * conversionRate;
+                gameState.shells -= 10;
+                gameState.shellDust += amount;
+                gameState.energy -= 1;
+            }
+            
+            // Shell Compressor - Convert Shell Dust to Hardened Shells
+            if (gameState.processors.compressor > 0 && gameState.shellDust >= 5) {
+                const conversionRate = PROCESSORS.compressor.baseConversion + PROCESSORS.compressor.effect(gameState.processors.compressor);
+                const amount = Math.min(gameState.shellDust, 5) * conversionRate;
+                gameState.shellDust -= 5;
+                gameState.hardenedShells += amount;
+                gameState.energy -= 1;
+            }
+            
+            // And so on for other processors...
+            
+            updateUI();
+        }
+
+        // Start energy regeneration
+        function startEnergyRegeneration() {
+            // Clear any existing interval
+            if (window.energyInterval) {
+                clearInterval(window.energyInterval);
+            }
+            
+            // Set up interval for energy regeneration
+            window.energyInterval = setInterval(() => {
+                if (gameState.energy < 100) {
+                    gameState.energy += 1;
+                    updateUI();
+                }
+            }, 5000);
+        }
+
+        // Switch between tabs
+        function switchTab(tabName) {
+            // Update tab active state
+            tabs.forEach(tab => {
+                if (tab.getAttribute('data-tab') === tabName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // Show appropriate panel (simplified for demo)
+            // In a full implementation, this would show/hide different panels
+        }
+
+        // Render upgrades in the upgrades panel
+        function renderUpgrades() {
+            upgradesContainer.innerHTML = '';
+            
+            for (const [key, upgrade] of Object.entries(UPGRADES)) {
+                const level = gameState.upgrades[key];
+                const cost = calculateUpgradeCost(key);
+                
+                const upgradeElement = document.createElement('div');
+                upgradeElement.className = 'upgrade';
+                
+                upgradeElement.innerHTML = `
+                    <div class="upgrade-header">
+                        <div class="upgrade-name">${upgrade.name}</div>
+                        <div class="upgrade-level">Level ${level}</div>
+                    </div>
+                    <div class="upgrade-description">${upgrade.description}</div>
+                    <div class="upgrade-cost">
+                        <span>Cost: ${formatNumber(cost)} shells</span>
+                        <button class="buy-btn" data-upgrade="${key}">Buy</button>
+                    </div>
+                `;
+                
+                upgradesContainer.appendChild(upgradeElement);
+            }
+            
+            // Add event listeners to buy buttons
+            document.querySelectorAll('.buy-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const upgradeKey = e.target.getAttribute('data-upgrade');
+                    buyUpgrade(upgradeKey);
+                });
+            });
+        }
+
+        // Render tools
+        function renderTools() {
+            toolsContainer.innerHTML = '';
+            
+            for (const [key, tool] of Object.entries(TOOLS)) {
+                const level = gameState.tools[key];
+                const cost = calculateToolCost(key);
+                
+                const toolElement = document.createElement('div');
+                toolElement.className = 'tool';
+                
+                toolElement.innerHTML = `
+                    <div class="tool-icon">${tool.icon}</div>
+                    <div class="tool-name">${tool.name}</div>
+                    <div class="tool-level">Level ${level}</div>
+                    <div class="tool-effect">${tool.description}</div>
+                    <button class="buy-btn" data-tool="${key}">Upgrade (${formatNumber(cost)})</button>
+                `;
+                
+                toolsContainer.appendChild(toolElement);
+            }
+            
+            // Add event listeners to buy buttons
+            document.querySelectorAll('.buy-btn[data-tool]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const toolKey = e.target.getAttribute('data-tool');
+                    buyTool(toolKey);
+                });
+            });
+        }
+
+        // Render pets
+        function renderPets() {
+            petsContainer.innerHTML = '';
+            
+            for (const [key, pet] of Object.entries(PETS)) {
+                const level = gameState.pets[key];
+                const cost = calculatePetCost(key);
+                
+                const petElement = document.createElement('div');
+                petElement.className = 'pet';
+                
+                petElement.innerHTML = `
+                    <div class="pet-icon">${pet.icon}</div>
+                    <div class="pet-name">${pet.name}</div>
+                    <div class="pet-level">Level ${level}</div>
+                    <div class="pet-effect">${pet.description}</div>
+                    <button class="buy-btn" data-pet="${key}">Upgrade (${formatNumber(cost)})</button>
+                `;
+                
+                petsContainer.appendChild(petElement);
+            }
+            
+            // Add event listeners to buy buttons
+            document.querySelectorAll('.buy-btn[data-pet]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const petKey = e.target.getAttribute('data-pet');
+                    buyPet(petKey);
+                });
+            });
+        }
+
+        // Render processors
+        function renderProcessors() {
+            processorsContainer.innerHTML = '';
+            
+            for (const [key, processor] of Object.entries(PROCESSORS)) {
+                const level = gameState.processors[key];
+                const cost = calculateProcessorCost(key);
+                
+                const processorElement = document.createElement('div');
+                processorElement.className = 'processor';
+                
+                processorElement.innerHTML = `
+                    <div class="processor-header">
+                        <div class="processor-name">${processor.name}</div>
+                        <div class="processor-level">Level ${level}</div>
+                    </div>
+                    <div class="processor-description">${processor.description}</div>
+                    <div class="processor-controls">
+                        <span>Cost: ${formatNumber(cost)} shells</span>
+                        <button class="buy-btn" data-processor="${key}">Upgrade</button>
+                    </div>
+                `;
+                
+                processorsContainer.appendChild(processorElement);
+            }
+            
+            // Add event listeners to buy buttons
+            document.querySelectorAll('.buy-btn[data-processor]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const processorKey = e.target.getAttribute('data-processor');
+                    buyProcessor(processorKey);
+                });
+            });
+        }
+
+        // Calculate upgrade cost
+        function calculateUpgradeCost(upgradeKey) {
+            const upgrade = UPGRADES[upgradeKey];
+            const level = gameState.upgrades[upgradeKey];
+            
+            return Math.floor(upgrade.baseCost * Math.pow(upgrade.costMultiplier, level));
+        }
+
+        // Calculate tool cost
+        function calculateToolCost(toolKey) {
+            const tool = TOOLS[toolKey];
+            const level = gameState.tools[toolKey];
+            
+            return Math.floor(tool.baseCost * Math.pow(tool.costMultiplier, level));
+        }
+
+        // Calculate pet cost
+        function calculatePetCost(petKey) {
+            const pet = PETS[petKey];
+            const level = gameState.pets[petKey];
+            
+            return Math.floor(pet.baseCost * Math.pow(pet.costMultiplier, level));
+        }
+
+        // Calculate processor cost
+        function calculateProcessorCost(processorKey) {
+            const processor = PROCESSORS[processorKey];
+            const level = gameState.processors[processorKey];
+            
+            return Math.floor(processor.baseCost * Math.pow(processor.costMultiplier, level));
+        }
+
+        // Buy an upgrade
+        function buyUpgrade(upgradeKey) {
+            const cost = calculateUpgradeCost(upgradeKey);
+            
+            if (gameState.shells >= cost) {
+                gameState.shells -= cost;
+                gameState.upgrades[upgradeKey] += 1;
+                
+                // Special handling for auto-pecker
+                if (upgradeKey === 'autoPecker') {
+                    startAutoPecker();
+                }
+                
+                renderUpgrades();
+                updateUI();
+                saveGame();
+            }
+        }
+
+        // Buy a tool
+        function buyTool(toolKey) {
+            const cost = calculateToolCost(toolKey);
+            
+            if (gameState.shells >= cost) {
+                gameState.shells -= cost;
+                gameState.tools[toolKey] += 1;
+                
+                renderTools();
+                updateUI();
+                saveGame();
+            }
+        }
+
+        // Buy a pet
+        function buyPet(petKey) {
+            const cost = calculatePetCost(petKey);
+            
+            if (gameState.petFragments >= cost) {
+                gameState.petFragments -= cost;
+                gameState.pets[petKey] += 1;
+                
+                renderPets();
+                updateUI();
+                saveGame();
+            }
+        }
+
+        // Buy a processor
+        function buyProcessor(processorKey) {
+            const cost = calculateProcessorCost(processorKey);
+            
+            if (gameState.shells >= cost) {
+                gameState.shells -= cost;
+                gameState.processors[processorKey] += 1;
+                
+                renderProcessors();
+                updateUI();
+                saveGame();
+            }
+        }
+
+        // Update UI elements
+        function updateUI() {
+            // Update resource counters
+            eggShellsElement.textContent = formatNumber(gameState.shells);
+            petFragmentsElement.textContent = formatNumber(gameState.petFragments);
+            
+            // Update stats
+            clickPowerElement.textContent = formatNumber(calculateShellsPerClick(), 2);
+            autoPecksElement.textContent = formatNumber(UPGRADES.autoPecker.effect(gameState.upgrades.autoPecker), 1);
+            eggsHatchedElement.textContent = gameState.eggsHatched;
+            eggTierElement.textContent = EGG_TIERS[gameState.currentEggTier].name;
+            
+            // Update progress bar
+            updateProgressBar();
+            
+            // Update upgrade buttons state
+            document.querySelectorAll('.buy-btn').forEach(btn => {
+                if (btn.hasAttribute('data-upgrade')) {
+                    const upgradeKey = btn.getAttribute('data-upgrade');
+                    const cost = calculateUpgradeCost(upgradeKey);
+                    btn.disabled = gameState.shells < cost;
+                    btn.textContent = `Buy (${formatNumber(cost)} shells)`;
+                }
+            });
+        }
+
+        // Format numbers for display
+        function formatNumber(num, decimals = 0) {
+            if (num < 1000) {
+                return num.toFixed(decimals);
+            }
+            
+            const units = ['K', 'M', 'B', 'T'];
+            let unitIndex = -1;
+            let formattedNum = num;
+            
+            while (formattedNum >= 1000 && unitIndex < units.length - 1) {
+                formattedNum /= 1000;
+                unitIndex++;
+            }
+            
+            return formattedNum.toFixed(decimals) + units[unitIndex];
+        }
+
+        // Show notification
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.background = 'var(--secondary)';
+            notification.style.color = 'white';
+            notification.style.padding = '10px 15px';
+            notification.style.borderRadius = '5px';
+            notification.style.zIndex = '1000';
+            notification.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.2)';
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+
+        // Save game state
+        function saveGame() {
+            localStorage.setItem('eggGameSave', JSON.stringify(gameState));
+        }
+
+        // Load game state
+        function loadGame() {
+            const saveData = localStorage.getItem('eggGameSave');
+            
+            if (saveData) {
+                try {
+                    const parsed = JSON.parse(saveData);
+                    Object.assign(gameState, parsed);
+                } catch (e) {
+                    console.error('Error loading save data:', e);
+                }
+            }
+            
+            updateEggAppearance();
+        }
+
+        // Initialize the game
+        init();
+        
+        // Auto-save every 30 seconds
+        setInterval(saveGame, 30000);
+    </script>
+</body>
+</html>

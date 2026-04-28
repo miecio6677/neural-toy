@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Botanist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #ffffff;
+            --secondary: #cccccc;
+            --accent: #00ff9d;
+            --background: #000000;
+            --panel-bg: rgba(10, 10, 10, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --success: #00ff9d;
+            --warning: #ffbb00;
+            --error: #ff4d4d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Space Mono', monospace;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            min-height: calc(100vh - 40px);
+        }
+
+        /* Top Bar */
+        .top-bar {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .xp-bar-container {
+            width: 200px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .xp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff00cc, #00ff9d);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .menu-icons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Seed Selection */
+        .seed-selection {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .seed-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 15px;
+            color: var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .seed-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .seed-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .seed-btn.selected {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+        }
+
+        /* Garden Grid */
+        .garden-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            flex-grow: 1;
+        }
+
+        .plot {
+            background: rgba(20, 20, 20, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            aspect-ratio: 1/1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .plot:hover {
+            background: rgba(30, 30, 30, 0.8);
+            transform: translateY(-3px);
+        }
+
+        .plot.mature {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+        }
+
+        .plot-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .progress-container {
+            position: relative;
+            width: 80%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff00cc, #00ff9d);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .plot-name {
+            font-size: 0.7rem;
+            margin-top: 5px;
+            color: var(--secondary);
+        }
+
+        /* Right Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        .upgrade-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .upgrade-item:last-child {
+            border-bottom: none;
+        }
+
+        .upgrade-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .upgrade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .upgrade-name {
+            font-weight: bold;
+        }
+
+        .upgrade-cost {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .upgrade-desc {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+
+        .upgrade-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Space Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #ff00cc, #00ff9d);
+            border: none;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.5);
+        }
+
+        .upgrade-level {
+            font-size: 0.9rem;
+            color: var(--secondary);
+        }
+
+        /* Notifications */
+        .notifications {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            animation: slideIn 0.3s ease, fadeOut 0.5s ease 2.5s forwards;
+            min-width: 250px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: translateX(100%); }
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .notification.info {
+            border-left: 4px solid var(--accent);
+        }
+
+        .notification.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        /* Particles */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            animation: floatUp 1s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr auto;
+            }
+            
+            .sidebar {
+                grid-row: 2;
+                grid-column: 1;
+            }
+            
+            .main-content {
+                grid-row: 3;
+            }
+            
+            .stats-container {
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .menu-icons {
+                align-self: flex-end;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .garden-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .seed-selection {
+                justify-content: center;
+            }
+            
+            .stats-container {
+                justify-content: center;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="stats-container">
+                <div class="stat">
+                    <div class="stat-value" id="oxygen">0</div>
+                    <div class="stat-label">Oxygen Credits</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="rate">+0/sec</div>
+                    <div class="stat-label">Production Rate</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="level">1</div>
+                    <div class="stat-label">Level</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="xp">0/100</div>
+                    <div class="stat-label">Experience</div>
+                    <div class="xp-bar-container">
+                        <div class="xp-bar" id="xp-bar"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-icons">
+                <button class="icon-btn" id="settings-btn">
+                    <i data-lucide="settings"></i>
+                </button>
+                <button class="icon-btn" id="save-btn">
+                    <i data-lucide="save"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Seed Selection -->
+            <div class="seed-selection">
+                <button class="seed-btn selected" data-seed="neon">
+                    <i data-lucide="leaf"></i> Neon Seed (Free)
+                </button>
+                <button class="seed-btn" data-seed="fern" disabled>
+                    <i data-lucide="sprout"></i> Data Fern (10)
+                </button>
+                <button class="seed-btn" data-seed="lily" disabled>
+                    <i data-lucide="flower"></i> Voltage Lily (50)
+                </button>
+                <button class="seed-btn" data-seed="oak" disabled>
+                    <i data-lucide="tree-pine"></i> Neural Oak (200)
+                </button>
+            </div>
+
+            <!-- Garden Grid -->
+            <div class="garden-grid" id="garden-grid">
+                <!-- Plots will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="sidebar">
+            <!-- Shop Panel -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i data-lucide="shopping-cart"></i>
+                    <h2>Shop</h2>
+                </div>
+                <div class="upgrade-item">
+                    <div class="upgrade-header">
+                        <div class="upgrade-name">Auto-Harvester</div>
+                        <div class="upgrade-cost">Cost: <span id="harvester-cost">150</span></div>
+                    </div>
+                    <div class="upgrade-desc">Automatically harvests mature plants every 10 seconds</div>
+                    <div class="upgrade-action">
+                        <div class="upgrade-level">Level: <span id="harvester-level">0</span></div>
+                        <button class="btn" id="buy-harvester">Buy</button>
+                    </div>
+                </div>
+                <div class="upgrade-item">
+                    <div class="upgrade-header">
+                        <div class="upgrade-name">Genetic Lab</div>
+                        <div class="upgrade-cost">Cost: <span id="lab-cost">300</span></div>
+                    </div>
+                    <div class="upgrade-desc">Increases growth speed by 20% per level</div>
+                    <div class="upgrade-action">
+                        <div class="upgrade-level">Level: <span id="lab-level">0</span></div>
+                        <button class="btn" id="buy-lab">Buy</button>
+                    </div>
+                </div>
+                <div class="upgrade-item">
+                    <div class="upgrade-header">
+                        <div class="upgrade-name">UV Overdrive</div>
+                        <div class="upgrade-cost">Cost: 100</div>
+                    </div>
+                    <div class="upgrade-desc">Double oxygen production for 15 seconds</div>
+                    <div class="upgrade-action">
+                        <div class="upgrade-level" id="uv-status">Ready</div>
+                        <button class="btn btn-primary" id="activate-uv">Activate</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upgrades Panel -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i data-lucide="trending-up"></i>
+                    <h2>Upgrades</h2>
+                </div>
+                <div class="upgrade-item">
+                    <div class="upgrade-header">
+                        <div class="upgrade-name">Root Optimizer</div>
+                        <div class="upgrade-cost">Cost: 250</div>
+                    </div>
+                    <div class="upgrade-desc">Increases oxygen production by 15%</div>
+                    <div class="upgrade-action">
+                        <div class="upgrade-level">Purchased: <span id="optimizer-level">No</span></div>
+                        <button class="btn" id="buy-optimizer">Buy</button>
+                    </div>
+                </div>
+                <div class="upgrade-item">
+                    <div class="upgrade-header">
+                        <div class="upgrade-name">Nano Sprinklers</div>
+                        <div class="upgrade-cost">Cost: 400</div>
+                    </div>
+                    <div class="upgrade-desc">10% chance per second to instantly mature a plant</div>
+                    <div class="upgrade-action">
+                        <div class="upgrade-level">Purchased: <span id="sprinkler-level">No</span></div>
+                        <button class="btn" id="buy-sprinkler">Buy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Container -->
+    <div class="notifications" id="notifications"></div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Game State
+        const gameState = {
+            oxygen: 0,
+            level: 1,
+            xp: 0,
+            xpNeeded: 100,
+            selectedSeed: 'neon',
+            plots: Array(16).fill(null),
+            upgrades: {
+                harvester: { level: 0, baseCost: 150 },
+                lab: { level: 0, baseCost: 300 },
+                optimizer: { purchased: false, cost: 250 },
+                sprinkler: { purchased: false, cost: 400 }
+            },
+            uvOverdrive: {
+                active: false,
+                cooldown: 0,
+                duration: 15
+            },
+            lastSave: Date.now(),
+            lastUpdate: Date.now(),
+            lastHarvest: Date.now()
+        };
+
+        // Plant Definitions
+        const plants = {
+            neon: {
+                name: "Neon Seed",
+                baseGrowthTime: 5,
+                incomePerSecond: 1,
+                xp: 5,
+                icon: "seedling"
+            },
+            fern: {
+                name: "Data Fern",
+                baseGrowthTime: 10,
+                incomePerSecond: 3,
+                xp: 10,
+                icon: "sprout",
+                cost: 10
+            },
+            lily: {
+                name: "Voltage Lily",
+                baseGrowthTime: 30,
+                incomePerSecond: 8,
+                xp: 25,
+                icon: "flower",
+                cost: 50
+            },
+            oak: {
+                name: "Neural Oak",
+                baseGrowthTime: 60,
+                incomePerSecond: 20,
+                xp: 50,
+                icon: "tree-pine",
+                cost: 200
+            }
+        };
+
+        // DOM Elements
+        const oxygenEl = document.getElementById('oxygen');
+        const rateEl = document.getElementById('rate');
+        const levelEl = document.getElementById('level');
+        const xpEl = document.getElementById('xp');
+        const xpBarEl = document.getElementById('xp-bar');
+        const gardenGridEl = document.getElementById('garden-grid');
+        const notificationsEl = document.getElementById('notifications');
+        const harvesterCostEl = document.getElementById('harvester-cost');
+        const labCostEl = document.getElementById('lab-cost');
+
+        // Initialize Game
+        function initGame() {
+            createGardenGrid();
+            setupEventListeners();
+            loadGame();
+            updateUI();
+            startGameLoop();
+        }
+
+        // Create Garden Grid
+        function createGardenGrid() {
+            gardenGridEl.innerHTML = '';
+            for (let i = 0; i < 16; i++) {
+                const plotEl = document.createElement('div');
+                plotEl.className = 'plot';
+                plotEl.dataset.index = i;
+                plotEl.innerHTML = `
+                    <div class="plot-content">
+                        <div class="plot-icon">
+                            <i data-lucide="circle"></i>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="plot-name">Empty</div>
+                    </div>
+                `;
+                gardenGridEl.appendChild(plotEl);
+            }
+            lucide.createIcons();
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Seed selection
+            document.querySelectorAll('.seed-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.disabled) return;
+                    document.querySelectorAll('.seed-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    gameState.selectedSeed = btn.dataset.seed;
+                });
+            });
+
+            // Plot planting/harvesting
+            gardenGridEl.addEventListener('click', (e) => {
+                const plotEl = e.target.closest('.plot');
+                if (!plotEl) return;
+                
+                const index = parseInt(plotEl.dataset.index);
+                const plot = gameState.plots[index];
+                
+                if (!plot) {
+                    plantSeed(index);
+                } else if (plot.mature) {
+                    harvestPlant(index);
+                }
+            });
+
+            // Upgrade buttons
+            document.getElementById('buy-harvester').addEventListener('click', () => buyUpgrade('harvester'));
+            document.getElementById('buy-lab').addEventListener('click', () => buyUpgrade('lab'));
+            document.getElementById('buy-optimizer').addEventListener('click', () => buyUpgrade('optimizer'));
+            document.getElementById('buy-sprinkler').addEventListener('click', () => buyUpgrade('sprinkler'));
+            document.getElementById('activate-uv').addEventListener('click', activateUVOverdrive);
+
+            // Save button
+            document.getElementById('save-btn').addEventListener('click', saveGame);
+            
+            // Settings button (placeholder)
+            document.getElementById('settings-btn').addEventListener('click', () => {
+                showNotification("Settings menu coming soon!", 'info');
+            });
+        }
+
+        // Plant Seed
+        function plantSeed(index) {
+            const seedType = gameState.selectedSeed;
+            const plant = plants[seedType];
+            
+            // Check if player can afford the seed
+            if (plant.cost && gameState.oxygen < plant.cost) {
+                showNotification(`Not enough oxygen credits! Need ${plant.cost}`, 'warning');
+                return;
+            }
+            
+            // Deduct cost
+            if (plant.cost) {
+                gameState.oxygen -= plant.cost;
+            }
+            
+            // Calculate growth time with lab upgrade
+            const growthTime = plant.baseGrowthTime * (gameState.upgrades.lab.level > 0 ? 
+                Math.pow(0.8, gameState.upgrades.lab.level) : 1);
+            
+            // Create plant object
+            gameState.plots[index] = {
+                type: seedType,
+                plantedAt: Date.now(),
+                growthTime: growthTime,
+                mature: false,
+                progress: 0
+            };
+            
+            // Add particle effect
+            createParticle(gardenGridEl.children[index], '+Plant!');
+            
+            // Update UI
+            updatePlot(index);
+            updateUI();
+            showNotification(`Planted ${plant.name}!`, 'info');
+        }
+
+        // Harvest Plant
+        function harvestPlant(index) {
+            const plot = gameState.plots[index];
+            const plant = plants[plot.type];
+            
+            // Calculate rewards
+            const reward = plant.incomePerSecond * (gameState.upgrades.optimizer.purchased ? 1.15 : 1);
+            const xpGain = plant.xp;
+            
+            // Apply UV overdrive bonus
+            const finalReward = gameState.uvOverdrive.active ? reward * 2 : reward;
+            
+            // Award rewards
+            gameState.oxygen += finalReward;
+            gameState.xp += xpGain;
+            
+            // Add particle effect
+            createParticle(gardenGridEl.children[index], `+${Math.round(finalReward)} O₂`);
+            
+            // Remove plant
+            gameState.plots[index] = null;
+            
+            // Update UI
+            updatePlot(index);
+            updateUI();
+            showNotification(`Harvested ${plant.name} for ${Math.round(finalReward)} O₂ and ${xpGain} XP!`, 'success');
+            
+            // Check for level up
+            checkLevelUp();
+        }
+
+        // Auto Harvest Plants
+        function autoHarvestPlants() {
+            if (gameState.upgrades.harvester.level === 0) return;
+            
+            const now = Date.now();
+            const harvestInterval = 10000 / gameState.upgrades.harvester.level; // 10 seconds per level
+            
+            if (now - gameState.lastHarvest >= harvestInterval) {
+                gameState.lastHarvest = now;
+                
+                gameState.plots.forEach((plot, index) => {
+                    if (plot && plot.mature) {
+                        harvestPlant(index);
+                    }
+                });
+            }
+        }
+
+        // Update Plot Display
+        function updatePlot(index) {
+            const plotEl = gardenGridEl.children[index];
+            const plot = gameState.plots[index];
+            
+            if (!plot) {
+                plotEl.innerHTML = `
+                    <div class="plot-content">
+                        <div class="plot-icon">
+                            <i data-lucide="circle"></i>
+                        </div>
+                        <div class="plot-name">Empty</div>
+                    </div>
+                `;
+                plotEl.classList.remove('mature');
+                lucide.createIcons();
+                return;
+            }
+            
+            const plant = plants[plot.type];
+            const now = Date.now();
+            const elapsed = (now - plot.plantedAt) / 1000;
+            const progress = Math.min(100, (elapsed / plot.growthTime) * 100);
+            const mature = progress >= 100;
+            
+            plot.progress = progress;
+            plot.mature = mature;
+            
+            plotEl.innerHTML = `
+                <div class="plot-content">
+                    <div class="plot-icon">
+                        <i data-lucide="${plant.icon}"></i>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="plot-name">${plant.name}</div>
+                </div>
+            `;
+            
+            plotEl.classList.toggle('mature', mature);
+            
+            lucide.createIcons();
+        }
+
+        // Buy Upgrade
+        function buyUpgrade(upgradeName) {
+            const upgrade = gameState.upgrades[upgradeName];
+            
+            // Check if already purchased (for one-time upgrades)
+            if ((upgradeName === 'optimizer' || upgradeName === 'sprinkler') && upgrade.purchased) {
+                showNotification("Already purchased!", 'warning');
+                return;
+            }
+            
+            // Calculate cost
+            let cost;
+            if (upgradeName === 'harvester' || upgradeName === 'lab') {
+                cost = upgrade.baseCost * (upgrade.level + 1);
+            } else {
+                cost = upgrade.cost;
+            }
+            
+            if (gameState.oxygen < cost) {
+                showNotification(`Not enough oxygen credits! Need ${cost}`, 'warning');
+                return;
+            }
+            
+            // Deduct cost
+            gameState.oxygen -= cost;
+            
+            // Apply upgrade
+            if (upgradeName === 'harvester' || upgradeName === 'lab') {
+                upgrade.level++;
+                
+                // Update growth times for existing plants if lab upgrade
+                if (upgradeName === 'lab') {
+                    gameState.plots.forEach((plot, index) => {
+                        if (plot) {
+                            const plant = plants[plot.type];
+                            plot.growthTime = plant.baseGrowthTime * Math.pow(0.8, upgrade.level);
+                            updatePlot(index);
+                        }
+                    });
+                }
+            } else {
+                upgrade.purchased = true;
+            }
+            
+            // Add particle effect
+            createParticle(document.getElementById(`buy-${upgradeName}`), '+Upgrade!');
+            
+            // Update UI
+            updateUI();
+            showNotification(`${upgradeName.charAt(0).toUpperCase() + upgradeName.slice(1)} upgraded!`, 'success');
+        }
+
+        // Activate UV Overdrive
+        function activateUVOverdrive() {
+            if (gameState.uvOverdrive.cooldown > 0) {
+                showNotification("UV Overdrive is on cooldown!", 'warning');
+                return;
+            }
+            
+            // Check if player has at least 100 oxygen
+            if (gameState.oxygen < 100) {
+                showNotification("Need 100 oxygen to activate UV Overdrive!", 'warning');
+                return;
+            }
+            
+            // Deduct cost
+            gameState.oxygen -= 100;
+            
+            gameState.uvOverdrive.active = true;
+            gameState.uvOverdrive.cooldown = 60;
+            
+            // Add particle effect
+            createParticle(document.getElementById('activate-uv'), '⚡ UV Active!');
+            
+            updateUI();
+            showNotification("UV Overdrive activated! Double production for 15 seconds!", 'success');
+            
+            // End effect after duration
+            setTimeout(() => {
+                gameState.uvOverdrive.active = false;
+                updateUI();
+                showNotification("UV Overdrive ended", 'info');
+            }, gameState.uvOverdrive.duration * 1000);
+        }
+
+        // Check for Level Up
+        function checkLevelUp() {
+            if (gameState.xp >= gameState.xpNeeded) {
+                gameState.level++;
+                gameState.xp -= gameState.xpNeeded;
+                gameState.xpNeeded = Math.floor(gameState.xpNeeded * 1.5);
+                
+                // Unlock new plants based on level
+                if (gameState.level >= 2) {
+                    document.querySelector('[data-seed="fern"]').disabled = false;
+                    showNotification("Unlocked Data Fern!", 'success');
+                }
+                
+                if (gameState.level >= 4) {
+                    document.querySelector('[data-seed="lily"]').disabled = false;
+                    showNotification("Unlocked Voltage Lily!", 'success');
+                }
+                
+                if (gameState.level >= 6) {
+                    document.querySelector('[data-seed="oak"]').disabled = false;
+                    showNotification("Unlocked Neural Oak!", 'success');
+                }
+                
+                updateUI();
+                showNotification(`Level Up! You are now level ${gameState.level}!`, 'success');
+            }
+        }
+
+        // Calculate Production Rate
+        function calculateProductionRate() {
+            let rate = 0;
+            gameState.plots.forEach(plot => {
+                if (plot && plot.mature) {
+                    const plant = plants[plot.type];
+                    rate += plant.incomePerSecond;
+                }
+            });
+            
+            // Apply optimizer bonus
+            if (gameState.upgrades.optimizer.purchased) {
+                rate *= 1.15;
+            }
+            
+            // Apply UV overdrive bonus
+            if (gameState.uvOverdrive.active) {
+                rate *= 2;
+            }
+            
+            return rate;
+        }
+
+        // Update UI
+        function updateUI() {
+            // Update stats
+            oxygenEl.textContent = Math.floor(gameState.oxygen);
+            const rate = calculateProductionRate();
+            rateEl.textContent = `+${rate.toFixed(1)}/sec`;
+            levelEl.textContent = gameState.level;
+            xpEl.textContent = `${Math.floor(gameState.xp)}/${gameState.xpNeeded}`;
+            xpBarEl.style.width = `${(gameState.xp / gameState.xpNeeded) * 100}%`;
+            
+            // Update upgrade levels
+            document.getElementById('harvester-level').textContent = gameState.upgrades.harvester.level;
+            document.getElementById('lab-level').textContent = gameState.upgrades.lab.level;
+            document.getElementById('optimizer-level').textContent = gameState.upgrades.optimizer.purchased ? 'Yes' : 'No';
+            document.getElementById('sprinkler-level').textContent = gameState.upgrades.sprinkler.purchased ? 'Yes' : 'No';
+            
+            // Update upgrade costs
+            harvesterCostEl.textContent = gameState.upgrades.harvester.baseCost * (gameState.upgrades.harvester.level + 1);
+            labCostEl.textContent = gameState.upgrades.lab.baseCost * (gameState.upgrades.lab.level + 1);
+            
+            // Update UV status
+            const uvStatusEl = document.getElementById('uv-status');
+            const uvButton = document.getElementById('activate-uv');
+            
+            if (gameState.uvOverdrive.active) {
+                uvStatusEl.textContent = `Active (${gameState.uvOverdrive.duration}s)`;
+                uvButton.disabled = true;
+            } else if (gameState.uvOverdrive.cooldown > 0) {
+                uvStatusEl.textContent = `Cooldown (${Math.ceil(gameState.uvOverdrive.cooldown)}s)`;
+                uvButton.disabled = true;
+            } else {
+                uvStatusEl.textContent = 'Ready';
+                uvButton.disabled = false;
+            }
+            
+            // Update seed availability based on level
+            document.querySelector('[data-seed="fern"]').disabled = gameState.level < 2;
+            document.querySelector('[data-seed="lily"]').disabled = gameState.level < 4;
+            document.querySelector('[data-seed="oak"]').disabled = gameState.level < 6;
+        }
+
+        // Game Loop
+        function startGameLoop() {
+            setInterval(() => {
+                const now = Date.now();
+                const deltaTime = (now - gameState.lastUpdate) / 1000;
+                gameState.lastUpdate = now;
+                
+                // Generate oxygen from mature plants
+                let production = 0;
+                gameState.plots.forEach((plot, index) => {
+                    if (plot && plot.mature) {
+                        const plant = plants[plot.type];
+                        production += plant.incomePerSecond * deltaTime;
+                    }
+                    
+                    // Update plot display
+                    if (plot) {
+                        updatePlot(index);
+                    }
+                });
+                
+                // Apply bonuses
+                if (gameState.upgrades.optimizer.purchased) {
+                    production *= 1.15;
+                }
+                
+                if (gameState.uvOverdrive.active) {
+                    production *= 2;
+                }
+                
+                gameState.oxygen += production;
+                
+                // Auto-harvester logic
+                autoHarvestPlants();
+                
+                // Nano sprinklers logic
+                if (gameState.upgrades.sprinkler.purchased) {
+                    // 10% chance per second to instantly mature a plant
+                    if (Math.random() < 0.1 * deltaTime) {
+                        const growingPlots = gameState.plots
+                            .map((plot, index) => ({ plot, index }))
+                            .filter(item => item.plot && !item.plot.mature);
+                        
+                        if (growingPlots.length > 0) {
+                            const randomIndex = Math.floor(Math.random() * growingPlots.length);
+                            const plotIndex = growingPlots[randomIndex].index;
+                            
+                            gameState.plots[plotIndex].mature = true;
+                            gameState.plots[plotIndex].progress = 100;
+                            
+                            updatePlot(plotIndex);
+                            showNotification("Nano Sprinklers activated! Plant matured instantly!", 'success');
+                        }
+                    }
+                }
+                
+                // UV Overdrive cooldown
+                if (gameState.uvOverdrive.cooldown > 0 && !gameState.uvOverdrive.active) {
+                    gameState.uvOverdrive.cooldown -= deltaTime;
+                    if (gameState.uvOverdrive.cooldown < 0) {
+                        gameState.uvOverdrive.cooldown = 0;
+                    }
+                }
+                
+                // Auto-save every 30 seconds
+                if (now - gameState.lastSave > 30000) {
+                    saveGame();
+                    gameState.lastSave = now;
+                }
+                
+                updateUI();
+            }, 1000);
+        }
+
+        // Show Notification
+        function showNotification(message, type = 'info') {
+            const notificationEl = document.createElement('div');
+            notificationEl.className = `notification ${type}`;
+            notificationEl.textContent = message;
+            
+            notificationsEl.appendChild(notificationEl);
+            
+            // Remove after animation
+            setTimeout(() => {
+                if (notificationEl.parentNode) {
+                    notificationEl.remove();
+                }
+            }, 3000);
+        }
+
+        // Create Particle Effect
+        function createParticle(element, text) {
+            const rect = element.getBoundingClientRect();
+            const particleEl = document.createElement('div');
+            particleEl.className = 'particle';
+            particleEl.textContent = text;
+            particleEl.style.left = `${rect.left + rect.width/2}px`;
+            particleEl.style.top = `${rect.top + rect.height/2}px`;
+            
+            document.body.appendChild(particleEl);
+            
+            // Remove after animation
+            setTimeout(() => {
+                if (particleEl.parentNode) {
+                    particleEl.remove();
+                }
+            }, 1000);
+        }
+
+        // Save Game
+        function saveGame() {
+            // Create a copy of the state without circular references
+            const saveData = {
+                oxygen: gameState.oxygen,
+                level: gameState.level,
+                xp: gameState.xp,
+                xpNeeded: gameState.xpNeeded,
+                selectedSeed: gameState.selectedSeed,
+                plots: gameState.plots.map(plot => {
+                    if (!plot) return null;
+                    return {
+                        type: plot.type,
+                        plantedAt: plot.plantedAt,
+                        growthTime: plot.growthTime,
+                        mature: plot.mature,
+                        progress: plot.progress
+                    };
+                }),
+                upgrades: JSON.parse(JSON.stringify(gameState.upgrades)),
+                uvOverdrive: JSON.parse(JSON.stringify(gameState.uvOverdrive)),
+                lastSave: Date.now()
+            };
+            
+            localStorage.setItem('cyberBotanistSave', JSON.stringify(saveData));
+            gameState.lastSave = Date.now();
+            showNotification("Game saved successfully!", 'success');
+        }
+
+        // Load Game
+        function loadGame() {
+            const saveData = localStorage.getItem('cyberBotanistSave');
+            if (saveData) {
+                try {
+                    const parsed = JSON.parse(saveData);
+                    
+                    // Restore basic properties
+                    gameState.oxygen = parsed.oxygen || 0;
+                    gameState.level = parsed.level || 1;
+                    gameState.xp = parsed.xp || 0;
+                    gameState.xpNeeded = parsed.xpNeeded || 100;
+                    gameState.selectedSeed = parsed.selectedSeed || 'neon';
+                    
+                    // Restore plots
+                    if (parsed.plots && Array.isArray(parsed.plots)) {
+                        gameState.plots = parsed.plots.map(plot => {
+                            if (!plot) return null;
+                            return {
+                                type: plot.type,
+                                plantedAt: plot.plantedAt,
+                                growthTime: plot.growthTime,
+                                mature: plot.mature,
+                                progress: plot.progress
+                            };
+                        });
+                    }
+                    
+                    // Restore upgrades
+                    if (parsed.upgrades) {
+                        Object.keys(parsed.upgrades).forEach(key => {
+                            if (gameState.upgrades[key]) {
+                                Object.assign(gameState.upgrades[key], parsed.upgrades[key]);
+                            }
+                        });
+                    }
+                    
+                    // Restore UV overdrive
+                    if (parsed.uvOverdrive) {
+                        Object.assign(gameState.uvOverdrive, parsed.uvOverdrive);
+                    }
+                    
+                    showNotification("Game loaded successfully!", 'success');
+                } catch (e) {
+                    console.error("Failed to load save:", e);
+                    showNotification("Failed to load save data", 'error');
+                }
+            }
+            
+            // Update all plots
+            gameState.plots.forEach((_, index) => updatePlot(index));
+        }
+
+        // Initialize the game when the page loads
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
