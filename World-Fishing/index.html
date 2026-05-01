@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>World Fishing 2D</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <h1>World Fishing 2D</h1>
+            <p id="subStatus">Mapa świata</p>
+          </div>
+        </div>
+
+        <nav class="main-nav" aria-label="Główna nawigacja">
+          <button class="nav-btn active" data-view="map">Mapa</button>
+          <button class="nav-btn" data-view="fishing">Łowienie</button>
+          <button class="nav-btn" data-view="shop">Sklep</button>
+          <button class="nav-btn" data-view="inventory">Inventory</button>
+          <button class="nav-btn" data-view="journal">Dziennik</button>
+          <button class="nav-btn" data-view="wiki">Wiki ryb</button>
+        </nav>
+
+        <div class="profile-strip" aria-live="polite">
+          <span id="moneyStat">$0</span>
+          <span id="levelStat">Lv. 1</span>
+          <span id="xpStat">0 XP</span>
+        </div>
+      </header>
+
+      <main class="game-layout">
+        <section class="canvas-column">
+          <div class="canvas-frame">
+            <canvas id="gameCanvas" width="1280" height="720"></canvas>
+            <div id="hudOverlay" class="hud-overlay"></div>
+          </div>
+          <div class="rod-dock">
+            <div id="multiRodPanel" class="rod-panel"></div>
+            <div id="actionBar" class="action-bar"></div>
+          </div>
+        </section>
+
+        <aside id="sidePanel" class="side-panel" aria-live="polite"></aside>
+      </main>
+    </div>
+
+    <div id="modalBackdrop" class="modal-backdrop hidden">
+      <div id="modalCard" class="modal-card" role="dialog" aria-modal="true"></div>
+    </div>
+
+    <script type="module" src="./src/game.js"></script>
+  </body>
+</html>

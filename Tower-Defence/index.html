@@ -27,6 +27,9 @@
     canvas {
       background: #000;
       display: block;
+      width: 100%;
+      height: clamp(360px, 64vh, 680px);
+      touch-action: none;
     }
     .btn-tower {
       transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
@@ -45,7 +48,8 @@
       overflow: hidden;
     }
     .upgrade-panel.open {
-      max-height: 250px;
+      max-height: 420px;
+      overflow-y: auto;
     }
     .wave-indicator {
       position: absolute;
@@ -81,14 +85,49 @@
       opacity: 0;
       transition: opacity 0.5s;
     }
+    .control-button {
+      min-height: 40px;
+      transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+    .control-button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+    .control-button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    @media (max-width: 700px) {
+      body {
+        align-items: flex-start;
+      }
+      #game {
+        height: min(58vh, 520px);
+        min-height: 340px;
+      }
+      #upgrade-panel {
+        left: 0.5rem;
+        right: 0.5rem;
+        top: auto;
+        bottom: 0.5rem;
+        width: auto;
+      }
+      #upgrade-panel.open {
+        max-height: min(62vh, 430px);
+      }
+      .wave-indicator {
+        width: max-content;
+        max-width: calc(100% - 2rem);
+        font-size: 1rem;
+      }
+    }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center">
-  <div class="w-full max-w-5xl mx-auto px-4 py-6">
+<body class="min-h-screen flex items-start justify-center">
+  <div class="w-full max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
     <!-- HUD -->
     <div class="flex flex-col gap-3 mb-3">
-      <div class="flex items-center justify-between rounded border border-slate-600/40 bg-slate-900/60 px-4 py-2 text-xs sm:text-sm">
-        <div class="flex items-center gap-4">
+      <div class="flex flex-col gap-2 rounded border border-slate-600/40 bg-slate-900/60 px-4 py-2 text-xs sm:text-sm lg:flex-row lg:items-center lg:justify-between">
+        <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-4">
           <div class="font-mono tracking-tight">
             Data Fragments:
             <span id="hud-money" class="text-indigo-400 font-semibold">0</span>
@@ -102,8 +141,8 @@
             <span id="hud-lives" class="text-rose-400">20</span>
           </div>
         </div>
-        <div class="hidden sm:flex items-center gap-2 text-[0.65rem] text-slate-400">
-          <span>Click to place towers • Right-click to upgrade • Don't build on the path</span>
+        <div class="flex items-center gap-2 text-[0.65rem] text-slate-400">
+          <span>Tap to place or select towers. Keep towers off the path.</span>
         </div>
       </div>
 
@@ -138,6 +177,18 @@
           <span class="font-mono text-indigo-300">Sniper</span>
           <span class="text-[0.65rem] text-slate-400">Very long range, high damage</span>
           <span class="text-[0.65rem] text-slate-500 mt-1">Cost: 150</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 gap-2 rounded border border-slate-600/40 bg-slate-900/60 px-3 py-2 text-xs sm:grid-cols-3 sm:text-sm">
+        <button id="start-wave-btn" class="control-button rounded border border-emerald-400/50 bg-emerald-500/10 px-3 py-2 font-mono text-emerald-200">
+          Start Wave
+        </button>
+        <button id="core-upgrade-btn" class="control-button rounded border border-indigo-400/50 bg-indigo-500/10 px-3 py-2 font-mono text-indigo-200">
+          Core Amplifier: <span id="core-upgrade-cost">180</span>
+        </button>
+        <button id="repair-core-btn" class="control-button rounded border border-rose-400/50 bg-rose-500/10 px-3 py-2 font-mono text-rose-200">
+          Repair Core: <span id="repair-core-cost">70</span>
         </button>
       </div>
     </div>
@@ -255,6 +306,11 @@
     const upgradeRangeCost = document.getElementById("upgrade-range-cost");
     const upgradeSpeedCost = document.getElementById("upgrade-speed-cost");
     const sellValue = document.getElementById("sell-value");
+    const startWaveBtn = document.getElementById("start-wave-btn");
+    const coreUpgradeBtn = document.getElementById("core-upgrade-btn");
+    const repairCoreBtn = document.getElementById("repair-core-btn");
+    const coreUpgradeCost = document.getElementById("core-upgrade-cost");
+    const repairCoreCost = document.getElementById("repair-core-cost");
 
     const towerButtons = Array.from(document.querySelectorAll("[data-tower]"));
 
@@ -264,6 +320,8 @@
     let canvasRect = null;
 
     function resizeCanvas() {
+      const oldPixelWidth = width * dpr;
+      const oldPixelHeight = height * dpr;
       const rect = canvas.getBoundingClientRect();
       dpr = window.devicePixelRatio || 1;
       width = rect.width;
@@ -271,16 +329,39 @@
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       canvasRect = rect;
+
+      if (Array.isArray(towers) && oldPixelWidth > 0 && oldPixelHeight > 0) {
+        const scaleX = canvas.width / oldPixelWidth;
+        const scaleY = canvas.height / oldPixelHeight;
+        const scale = (scaleX + scaleY) / 2;
+        towers.forEach((tower) => {
+          tower.x *= scaleX;
+          tower.y *= scaleY;
+          tower.range *= scale;
+          tower.baseRange *= scale;
+          if (tower.splashRadius) tower.splashRadius *= scale;
+          if (tower.baseSplashRadius) tower.baseSplashRadius *= scale;
+        });
+        enemies.forEach((enemy) => {
+          enemy.x *= scaleX;
+          enemy.y *= scaleY;
+        });
+        projectiles.forEach((projectile) => {
+          projectile.x *= scaleX;
+          projectile.y *= scaleY;
+        });
+        path = initPath();
+      }
     }
     window.addEventListener("resize", resizeCanvas);
-    // Initial resize
-    resizeCanvas();
 
     // Game state
     let money, lives, wave, enemies, towers, projectiles, particles, path, spawnTimer, spawnInterval, enemiesToSpawn, gameRunning, lastTime;
     let selectedTowerType = "pulse";
     let selectedTower = null;
     let waveActive = false;
+    let coreAmplifierLevel = 0;
+    let nextWaveTimeout = null;
     let towerUnlocked = {
       missile: false,
       sniper: false
@@ -321,6 +402,10 @@
     }
 
     function resetGame() {
+      if (nextWaveTimeout) {
+        clearTimeout(nextWaveTimeout);
+        nextWaveTimeout = null;
+      }
       money = 120;
       lives = 20;
       wave = 1;
@@ -335,6 +420,7 @@
       gameRunning = true;
       selectedTower = null;
       waveActive = false;
+      coreAmplifierLevel = 0;
       lastTime = performance.now();
       gameOverEl.classList.remove("opacity-100");
       gameOverEl.classList.add("opacity-0");
@@ -358,6 +444,49 @@
       hudMoney.textContent = Math.floor(money);
       hudWave.textContent = wave;
       hudLives.textContent = lives;
+      updateControlButtons();
+    }
+
+    function getCoreDamageMultiplier() {
+      return 1 + coreAmplifierLevel * 0.08;
+    }
+
+    function getCoreUpgradeCost() {
+      return Math.round(180 * Math.pow(1.55, coreAmplifierLevel));
+    }
+
+    function getRepairCost() {
+      return Math.round(70 + wave * 12 + (20 - lives) * 5);
+    }
+
+    function updateControlButtons() {
+      const amplifierCost = getCoreUpgradeCost();
+      const repairCost = getRepairCost();
+      coreUpgradeCost.textContent = amplifierCost;
+      repairCoreCost.textContent = lives >= 20 ? "Full" : repairCost;
+      coreUpgradeBtn.disabled = money < amplifierCost;
+      repairCoreBtn.disabled = lives >= 20 || money < repairCost;
+      startWaveBtn.disabled = waveActive || !gameRunning;
+      startWaveBtn.textContent = waveActive ? "Wave Active" : "Start Wave";
+    }
+
+    function buyCoreAmplifier() {
+      const cost = getCoreUpgradeCost();
+      if (money < cost) return;
+      money -= cost;
+      coreAmplifierLevel++;
+      showNotification(`Core Amplifier level ${coreAmplifierLevel}: tower damage +${coreAmplifierLevel * 8}%`);
+      updateHUD();
+      if (selectedTower) updateUpgradePanel(selectedTower);
+    }
+
+    function repairCore() {
+      const cost = getRepairCost();
+      if (lives >= 20 || money < cost) return;
+      money -= cost;
+      lives = Math.min(20, lives + 3);
+      showNotification("Core integrity repaired.");
+      updateHUD();
     }
 
     function distance(a, b) {
@@ -412,6 +541,10 @@
 
     function startWave() {
       if (waveActive) return;
+      if (nextWaveTimeout) {
+        clearTimeout(nextWaveTimeout);
+        nextWaveTimeout = null;
+      }
       
       // Show wave indicator
       waveNumber.textContent = wave;
@@ -424,6 +557,7 @@
       enemiesToSpawn = 8 + wave * 2;
       spawnInterval = Math.max(0.2, 1.0 - wave * 0.04);
       spawnTimer = 0;
+      updateHUD();
     }
 
     function nextWave() {
@@ -577,7 +711,7 @@
       upgradeTowerName.textContent = typeNames[tower.type];
       
       let statsText = `Level: ${tower.level}`;
-      if (tower.type !== 'slow') statsText += ` | Damage: ${Math.round(tower.damage)}`;
+      if (tower.type !== 'slow') statsText += ` | Damage: ${Math.round(tower.damage * getCoreDamageMultiplier())}`;
       statsText += ` | Range: ${Math.round(tower.range/dpr)}`;
       if (tower.type !== 'slow') statsText += ` | Speed: ${tower.fireRate.toFixed(1)}/s`;
       if (tower.type === 'slow') statsText += ` | Slow: ${Math.round(tower.slowAmount * 100)}%`;
@@ -749,6 +883,9 @@
     retryBtn.addEventListener("click", () => {
       resetGame();
     });
+    startWaveBtn.addEventListener("click", startWave);
+    coreUpgradeBtn.addEventListener("click", buyCoreAmplifier);
+    repairCoreBtn.addEventListener("click", repairCore);
 
     // Upgrade button event listeners
     upgradeDamageBtn.addEventListener("click", () => upgradeTower('damage'));
@@ -759,9 +896,14 @@
 
     function gameOver() {
       gameRunning = false;
+      if (nextWaveTimeout) {
+        clearTimeout(nextWaveTimeout);
+        nextWaveTimeout = null;
+      }
       gameOverEl.classList.remove("pointer-events-none");
       gameOverEl.classList.remove("opacity-0");
       gameOverEl.classList.add("opacity-100");
+      updateHUD();
     }
 
     // Particles
@@ -935,7 +1077,7 @@
         if (dist <= tower.splashRadius) {
           // Reduced damage based on distance
           const damageFactor = 1 - (dist / tower.splashRadius) * 0.5;
-          e.hp -= tower.damage * damageFactor;
+          e.hp -= missile.damage * damageFactor;
           
           if (e.hp <= 0) {
             money += e.reward;
@@ -996,14 +1138,14 @@
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             life: 1.2,
-            damage: t.damage,
+            damage: t.damage * getCoreDamageMultiplier(),
             type: "pulse",
             color: "rgba(129,140,248,0.9)"
           });
           t.cooldown = 1 / t.fireRate;
         } else if (t.type === "beam") {
           // instant damage + beam visual
-          target.hp -= t.damage;
+          target.hp -= t.damage * getCoreDamageMultiplier();
           spawnParticles(target.x, target.y, "rgba(129,140,248,0.9)");
           // store a short-lived beam effect as projectile-like
           projectiles.push({
@@ -1030,7 +1172,7 @@
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             life: 3.0,
-            damage: t.demage,
+            damage: t.damage * getCoreDamageMultiplier(),
             type: "missile",
             target: target,
             source: t,
@@ -1046,7 +1188,7 @@
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             life: 1.5,
-            damage: t.damage,
+            damage: t.damage * getCoreDamageMultiplier(),
             type: "sniper",
             penetration: t.penetration,
             color: "rgba(239,68,68,0.9)"
@@ -1279,9 +1421,9 @@
           spawnEnemy();
           enemiesToSpawn--;
         }
-      } else if (enemies.length === 0) {
+      } else if (enemies.length === 0 && !nextWaveTimeout) {
         // Auto-start next wave after a delay
-        setTimeout(startWave, 2000);
+        nextWaveTimeout = setTimeout(startWave, 2000);
       }
 
       updateEnemies(dt);
@@ -1323,6 +1465,7 @@
       };
     }
 
+    resizeCanvas();
     resetGame();
     requestAnimationFrame((t) => {
       lastTime = t;

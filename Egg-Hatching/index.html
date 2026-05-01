@@ -32,7 +32,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            width: min(1200px, 100%);
             margin: 0 auto;
         }
         
@@ -40,6 +40,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 16px;
             padding: 15px 20px;
             background-color: rgba(44, 62, 80, 0.8);
             border-radius: 10px;
@@ -57,11 +58,14 @@
         .resource-bar {
             display: flex;
             gap: 20px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
         
         .resource {
             display: flex;
             align-items: center;
+            min-height: 38px;
             background: rgba(52, 73, 94, 0.7);
             padding: 8px 15px;
             border-radius: 20px;
@@ -78,7 +82,8 @@
             background-color: rgba(44, 62, 80, 0.8);
             border-radius: 10px;
             margin-bottom: 20px;
-            overflow: hidden;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .tab {
@@ -87,6 +92,8 @@
             transition: all 0.3s ease;
             text-align: center;
             flex: 1;
+            min-width: max-content;
+            user-select: none;
         }
         
         .tab:hover {
@@ -102,6 +109,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            align-items: start;
         }
         
         .panel {
@@ -109,6 +117,25 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            min-width: 0;
+        }
+
+        .panel[data-panel]:not(.active-panel) {
+            display: none;
+        }
+
+        .panel[data-panel].active-panel {
+            display: block;
+            grid-column: 1 / -1;
+        }
+
+        .panel[data-panel="egg"].active-panel {
+            display: flex;
+            grid-column: auto;
+        }
+
+        .panel[data-panel="upgrades"].active-panel {
+            grid-column: auto;
         }
         
         .panel-title {
@@ -153,10 +180,11 @@
         }
         
         .egg {
-            width: 180px;
-            height: 240px;
+            width: clamp(130px, 32vw, 180px);
+            height: clamp(176px, 42vw, 240px);
             cursor: pointer;
             position: relative;
+            touch-action: manipulation;
             transition: transform 0.1s ease;
             background: linear-gradient(to bottom, #f9f9f9, #e0e0e0);
             border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
@@ -301,6 +329,7 @@
             cursor: pointer;
             transition: background-color 0.2s ease;
             font-weight: bold;
+            min-height: 40px;
         }
         
         .buy-btn:hover:not(:disabled) {
@@ -358,6 +387,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
         }
         
         /* Tools Panel */
@@ -510,13 +540,34 @@
         
         /* Responsive adjustments */
         @media (max-width: 768px) {
+            body {
+                min-height: 100dvh;
+                padding: 10px;
+            }
+
+            header {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .game-title {
+                font-size: 1.35rem;
+            }
+
             .main-content {
                 grid-template-columns: 1fr;
             }
+
+            .panel[data-panel="egg"].active-panel,
+            .panel[data-panel="upgrades"].active-panel {
+                grid-column: 1;
+            }
             
             .resource-bar {
-                flex-wrap: wrap;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
                 gap: 10px;
+                justify-content: stretch;
             }
             
             .tabs {
@@ -524,7 +575,25 @@
             }
             
             .tab {
-                flex: 1 0 33%;
+                flex: 0 0 auto;
+                padding: 12px 14px;
+                font-size: 0.9rem;
+            }
+
+            .egg-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .upgrade-header,
+            .upgrade-cost,
+            .processor-header,
+            .processor-controls {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .buy-btn {
+                width: 100%;
             }
         }
     </style>
@@ -563,8 +632,57 @@
         </div>
         
         <div class="main-content">
+            <!-- Mining Panel -->
+            <div class="panel" data-panel="mining">
+                <h2 class="panel-title">Mining Rig</h2>
+                <div class="egg-stats">
+                    <div class="stat">
+                        <div>Ore per Tap</div>
+                        <div class="stat-value" id="ore-per-tap">15</div>
+                    </div>
+                    <div class="stat">
+                        <div>Max Energy</div>
+                        <div class="stat-value" id="max-energy">100</div>
+                    </div>
+                    <div class="stat">
+                        <div>Drill Level</div>
+                        <div class="stat-value" id="drill-level">0</div>
+                    </div>
+                    <div class="stat">
+                        <div>Battery Level</div>
+                        <div class="stat-value" id="battery-level">0</div>
+                    </div>
+                </div>
+                <div class="processors">
+                    <div class="processor">
+                        <div class="processor-header">
+                            <div class="processor-name">Manual Drill</div>
+                            <div class="processor-level">Energy -1</div>
+                        </div>
+                        <div class="processor-description">Mine ore for late-game tools and processor upgrades.</div>
+                        <button class="buy-btn" id="mine-ore-btn">Mine Ore</button>
+                    </div>
+                    <div class="processor">
+                        <div class="processor-header">
+                            <div class="processor-name">Drill Motor</div>
+                            <div class="processor-level">Level <span id="drill-upgrade-level">0</span></div>
+                        </div>
+                        <div class="processor-description">Increases ore gained per mining tap.</div>
+                        <button class="buy-btn" id="buy-drill-btn">Upgrade Drill</button>
+                    </div>
+                    <div class="processor">
+                        <div class="processor-header">
+                            <div class="processor-name">Battery Cells</div>
+                            <div class="processor-level">Level <span id="battery-upgrade-level">0</span></div>
+                        </div>
+                        <div class="processor-description">Raises max energy and improves regeneration.</div>
+                        <button class="buy-btn" id="buy-battery-btn">Upgrade Battery</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Egg Panel -->
-            <div class="panel egg-panel">
+            <div class="panel egg-panel active-panel" data-panel="egg">
                 <h2 class="panel-title">Egg Hatchery</h2>
                 
                 <div class="egg-stats">
@@ -602,7 +720,7 @@
             </div>
             
             <!-- Upgrades Panel -->
-            <div class="panel">
+            <div class="panel active-panel" data-panel="upgrades">
                 <h2 class="panel-title">Egg Upgrades</h2>
                 
                 <div class="upgrades-panel" id="upgrades-container">
@@ -611,8 +729,26 @@
             </div>
             
             <!-- Processing Panel -->
-            <div class="panel processing-panel">
+            <div class="panel processing-panel" data-panel="processing">
                 <h2 class="panel-title">Shell Processing</h2>
+                <div class="egg-stats">
+                    <div class="stat">
+                        <div>Dust</div>
+                        <div class="stat-value" id="shell-dust">0</div>
+                    </div>
+                    <div class="stat">
+                        <div>Hardened</div>
+                        <div class="stat-value" id="hardened-shells">0</div>
+                    </div>
+                    <div class="stat">
+                        <div>Crystal</div>
+                        <div class="stat-value" id="crystal-shells">0</div>
+                    </div>
+                    <div class="stat">
+                        <div>Ancient Cores</div>
+                        <div class="stat-value" id="ancient-cores">0</div>
+                    </div>
+                </div>
                 
                 <div class="processors" id="processors-container">
                     <!-- Processors will be populated by JavaScript -->
@@ -620,7 +756,7 @@
             </div>
             
             <!-- Tools Panel -->
-            <div class="panel">
+            <div class="panel" data-panel="tools">
                 <h2 class="panel-title">Egg Tools</h2>
                 
                 <div class="tools-panel" id="tools-container">
@@ -629,7 +765,7 @@
             </div>
             
             <!-- Pets Panel -->
-            <div class="panel">
+            <div class="panel" data-panel="pets">
                 <h2 class="panel-title">Pets</h2>
                 
                 <div class="pets-panel" id="pets-container">
@@ -677,7 +813,14 @@
                 autoPecker: 0,
                 shellHardness: 0,
                 incubatorSpeed: 0,
-                luckFactor: 0
+                luckFactor: 0,
+                criticalCracks: 0,
+                shellMagnet: 0
+            },
+
+            mining: {
+                drill: 0,
+                battery: 0
             },
             
             // Tools
@@ -755,6 +898,20 @@
                 baseCost: 300,
                 costMultiplier: 1.6,
                 effect: level => 0.1 * level
+            },
+            criticalCracks: {
+                name: "Critical Cracks",
+                description: "Adds a chance that a tap counts as multiple hatch hits",
+                baseCost: 450,
+                costMultiplier: 1.75,
+                effect: level => Math.min(0.03 * level, 0.45)
+            },
+            shellMagnet: {
+                name: "Shell Magnet",
+                description: "Boosts auto-pecker rate and passive shell pickup",
+                baseCost: 650,
+                costMultiplier: 1.8,
+                effect: level => 0.08 * level
             }
         };
 
@@ -914,6 +1071,12 @@
         const eggElement = document.getElementById('egg');
         const eggShellsElement = document.getElementById('egg-shells');
         const petFragmentsElement = document.getElementById('pet-fragments');
+        const oreCountElement = document.getElementById('ore-count');
+        const energyCountElement = document.getElementById('energy-count');
+        const shellDustElement = document.getElementById('shell-dust');
+        const hardenedShellsElement = document.getElementById('hardened-shells');
+        const crystalShellsElement = document.getElementById('crystal-shells');
+        const ancientCoresElement = document.getElementById('ancient-cores');
         const hatchProgressElement = document.getElementById('hatch-progress');
         const progressTextElement = document.getElementById('progress-text');
         const clickPowerElement = document.getElementById('click-power');
@@ -929,6 +1092,16 @@
         const evolveBtn = document.getElementById('evolve-btn');
         const laterBtn = document.getElementById('later-btn');
         const tabs = document.querySelectorAll('.tab');
+        const panels = document.querySelectorAll('[data-panel]');
+        const orePerTapElement = document.getElementById('ore-per-tap');
+        const maxEnergyElement = document.getElementById('max-energy');
+        const drillLevelElement = document.getElementById('drill-level');
+        const batteryLevelElement = document.getElementById('battery-level');
+        const drillUpgradeLevelElement = document.getElementById('drill-upgrade-level');
+        const batteryUpgradeLevelElement = document.getElementById('battery-upgrade-level');
+        const mineOreBtn = document.getElementById('mine-ore-btn');
+        const buyDrillBtn = document.getElementById('buy-drill-btn');
+        const buyBatteryBtn = document.getElementById('buy-battery-btn');
 
         // Initialize the game
         function init() {
@@ -970,6 +1143,10 @@
             laterBtn.addEventListener('click', () => {
                 evolutionModal.style.display = 'none';
             });
+
+            mineOreBtn.addEventListener('click', mineOre);
+            buyDrillBtn.addEventListener('click', () => buyMiningUpgrade('drill'));
+            buyBatteryBtn.addEventListener('click', () => buyMiningUpgrade('battery'));
         }
 
         // Handle egg click
@@ -981,7 +1158,13 @@
             
             // Increase hatch progress
             const requiredClicks = calculateRequiredClicks();
-            gameState.hatchProgress += 1;
+            let progressGain = 1;
+            const criticalChance = UPGRADES.criticalCracks.effect(gameState.upgrades.criticalCracks);
+            if (Math.random() < criticalChance) {
+                progressGain += 3;
+                showNotification("Critical crack! Hatch progress surged.");
+            }
+            gameState.hatchProgress += progressGain;
             
             // Update progress bar
             updateProgressBar();
@@ -1006,6 +1189,7 @@
             const base = currentTier.baseReward / currentTier.hatchRequirement;
             const clickPowerBonus = UPGRADES.clickPower.effect(gameState.upgrades.clickPower);
             const shellHardnessBonus = UPGRADES.shellHardness.effect(gameState.upgrades.shellHardness);
+            const magnetBonus = UPGRADES.shellMagnet.effect(gameState.upgrades.shellMagnet);
             
             // Calculate tool bonuses
             let toolBonus = 0;
@@ -1021,7 +1205,7 @@
             if (gameState.pets.voidSprite > 0) petBonus += PETS.voidSprite.effect(gameState.pets.voidSprite).shellGain;
             if (gameState.pets.ancientGuardian > 0) petBonus += PETS.ancientGuardian.effect(gameState.pets.ancientGuardian).shellGain;
             
-            return base * (1 + clickPowerBonus) * (1 + shellHardnessBonus) * (1 + toolBonus) * (1 + petBonus);
+            return base * (1 + clickPowerBonus) * (1 + shellHardnessBonus) * (1 + magnetBonus) * (1 + toolBonus) * (1 + petBonus);
         }
 
         // Calculate required clicks to hatch
@@ -1147,7 +1331,7 @@
             }
             
             // Calculate clicks per second
-            const cps = UPGRADES.autoPecker.effect(gameState.upgrades.autoPecker);
+            const cps = calculateAutoPecks();
             
             if (cps > 0) {
                 // Set up interval for auto clicks
@@ -1155,6 +1339,11 @@
                     handleEggClick();
                 }, 1000 / cps);
             }
+        }
+
+        function calculateAutoPecks() {
+            const base = UPGRADES.autoPecker.effect(gameState.upgrades.autoPecker);
+            return base * (1 + UPGRADES.shellMagnet.effect(gameState.upgrades.shellMagnet));
         }
 
         // Start processing
@@ -1192,8 +1381,33 @@
                 gameState.hardenedShells += amount;
                 gameState.energy -= 1;
             }
-            
-            // And so on for other processors...
+
+            if (gameState.processors.crystalizer > 0 && gameState.hardenedShells >= 3) {
+                const conversionRate = PROCESSORS.crystalizer.baseConversion + PROCESSORS.crystalizer.effect(gameState.processors.crystalizer);
+                const amount = Math.min(gameState.hardenedShells, 3) * conversionRate;
+                gameState.hardenedShells -= 3;
+                gameState.crystalShells += amount;
+                gameState.energy -= 1;
+            }
+
+            if (gameState.processors.prismForge > 0 && gameState.crystalShells >= 2 && gameState.voidShells >= 1) {
+                const conversionRate = PROCESSORS.prismForge.baseConversion + PROCESSORS.prismForge.effect(gameState.processors.prismForge);
+                const amount = Math.min(gameState.crystalShells, 2) * conversionRate;
+                gameState.crystalShells -= 2;
+                gameState.voidShells -= 1;
+                gameState.prismaticShells += amount;
+                gameState.energy -= 1;
+            }
+
+            if (gameState.processors.ancientSynthesizer > 0 && gameState.prismaticShells >= 1 && gameState.petFragments >= 1) {
+                const conversionRate = PROCESSORS.ancientSynthesizer.baseConversion + PROCESSORS.ancientSynthesizer.effect(gameState.processors.ancientSynthesizer);
+                gameState.prismaticShells -= 1;
+                gameState.petFragments -= 1;
+                gameState.ancientCores += conversionRate;
+                gameState.energy -= 1;
+            }
+
+            gameState.energy = Math.max(0, gameState.energy);
             
             updateUI();
         }
@@ -1207,8 +1421,9 @@
             
             // Set up interval for energy regeneration
             window.energyInterval = setInterval(() => {
-                if (gameState.energy < 100) {
-                    gameState.energy += 1;
+                const maxEnergy = getMaxEnergy();
+                if (gameState.energy < maxEnergy) {
+                    gameState.energy = Math.min(maxEnergy, gameState.energy + 1 + Math.floor(gameState.mining.battery / 3));
                     updateUI();
                 }
             }, 5000);
@@ -1224,9 +1439,19 @@
                     tab.classList.remove('active');
                 }
             });
-            
-            // Show appropriate panel (simplified for demo)
-            // In a full implementation, this would show/hide different panels
+
+            const visiblePanels = {
+                mining: ['mining'],
+                refinery: ['processing'],
+                egg: ['egg', 'upgrades'],
+                processing: ['processing'],
+                tools: ['tools'],
+                pets: ['pets']
+            }[tabName] || ['egg', 'upgrades'];
+
+            panels.forEach(panel => {
+                panel.classList.toggle('active-panel', visiblePanels.includes(panel.dataset.panel));
+            });
         }
 
         // Render upgrades in the upgrades panel
@@ -1256,7 +1481,7 @@
             }
             
             // Add event listeners to buy buttons
-            document.querySelectorAll('.buy-btn').forEach(btn => {
+            document.querySelectorAll('.buy-btn[data-upgrade]').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const upgradeKey = e.target.getAttribute('data-upgrade');
                     buyUpgrade(upgradeKey);
@@ -1402,7 +1627,7 @@
                 gameState.upgrades[upgradeKey] += 1;
                 
                 // Special handling for auto-pecker
-                if (upgradeKey === 'autoPecker') {
+                if (upgradeKey === 'autoPecker' || upgradeKey === 'shellMagnet') {
                     startAutoPecker();
                 }
                 
@@ -1454,17 +1679,79 @@
             }
         }
 
+        function getMaxEnergy() {
+            return 100 + gameState.mining.battery * 25;
+        }
+
+        function calculateOrePerTap() {
+            return 15 + gameState.mining.drill * 9 + Math.floor(gameState.currentEggTier * 4);
+        }
+
+        function getMiningUpgradeCost(type) {
+            const level = gameState.mining[type] || 0;
+            const base = type === 'drill' ? 180 : 260;
+            return Math.floor(base * Math.pow(1.65, level));
+        }
+
+        function mineOre() {
+            if (gameState.energy <= 0) {
+                showNotification("Not enough energy.");
+                return;
+            }
+
+            const amount = calculateOrePerTap();
+            gameState.energy -= 1;
+            gameState.ore += amount;
+            showNotification(`Mined ${formatNumber(amount)} ore.`);
+            updateUI();
+            saveGame();
+        }
+
+        function buyMiningUpgrade(type) {
+            const cost = getMiningUpgradeCost(type);
+            if (gameState.ore < cost) {
+                showNotification(`Need ${formatNumber(cost)} ore.`);
+                return;
+            }
+
+            gameState.ore -= cost;
+            gameState.mining[type] += 1;
+            if (type === 'battery') {
+                gameState.energy = Math.min(getMaxEnergy(), gameState.energy + 25);
+            }
+            showNotification(type === 'drill' ? "Drill upgraded." : "Battery upgraded.");
+            updateUI();
+            saveGame();
+        }
+
         // Update UI elements
         function updateUI() {
             // Update resource counters
             eggShellsElement.textContent = formatNumber(gameState.shells);
             petFragmentsElement.textContent = formatNumber(gameState.petFragments);
+            oreCountElement.textContent = formatNumber(gameState.ore);
+            energyCountElement.textContent = `${Math.floor(gameState.energy)}/${getMaxEnergy()}`;
+            shellDustElement.textContent = formatNumber(gameState.shellDust, 1);
+            hardenedShellsElement.textContent = formatNumber(gameState.hardenedShells, 1);
+            crystalShellsElement.textContent = formatNumber(gameState.crystalShells, 1);
+            ancientCoresElement.textContent = formatNumber(gameState.ancientCores, 2);
             
             // Update stats
             clickPowerElement.textContent = formatNumber(calculateShellsPerClick(), 2);
-            autoPecksElement.textContent = formatNumber(UPGRADES.autoPecker.effect(gameState.upgrades.autoPecker), 1);
+            autoPecksElement.textContent = formatNumber(calculateAutoPecks(), 1);
             eggsHatchedElement.textContent = gameState.eggsHatched;
             eggTierElement.textContent = EGG_TIERS[gameState.currentEggTier].name;
+            orePerTapElement.textContent = formatNumber(calculateOrePerTap());
+            maxEnergyElement.textContent = getMaxEnergy();
+            drillLevelElement.textContent = gameState.mining.drill;
+            batteryLevelElement.textContent = gameState.mining.battery;
+            drillUpgradeLevelElement.textContent = gameState.mining.drill;
+            batteryUpgradeLevelElement.textContent = gameState.mining.battery;
+            mineOreBtn.disabled = gameState.energy <= 0;
+            buyDrillBtn.disabled = gameState.ore < getMiningUpgradeCost('drill');
+            buyBatteryBtn.disabled = gameState.ore < getMiningUpgradeCost('battery');
+            buyDrillBtn.textContent = `Upgrade Drill (${formatNumber(getMiningUpgradeCost('drill'))} ore)`;
+            buyBatteryBtn.textContent = `Upgrade Battery (${formatNumber(getMiningUpgradeCost('battery'))} ore)`;
             
             // Update progress bar
             updateProgressBar();
@@ -1476,6 +1763,18 @@
                     const cost = calculateUpgradeCost(upgradeKey);
                     btn.disabled = gameState.shells < cost;
                     btn.textContent = `Buy (${formatNumber(cost)} shells)`;
+                } else if (btn.hasAttribute('data-tool')) {
+                    const toolKey = btn.getAttribute('data-tool');
+                    const cost = calculateToolCost(toolKey);
+                    btn.disabled = gameState.shells < cost;
+                } else if (btn.hasAttribute('data-pet')) {
+                    const petKey = btn.getAttribute('data-pet');
+                    const cost = calculatePetCost(petKey);
+                    btn.disabled = gameState.petFragments < cost;
+                } else if (btn.hasAttribute('data-processor')) {
+                    const processorKey = btn.getAttribute('data-processor');
+                    const cost = calculateProcessorCost(processorKey);
+                    btn.disabled = gameState.shells < cost;
                 }
             });
         }
@@ -1533,13 +1832,51 @@
             if (saveData) {
                 try {
                     const parsed = JSON.parse(saveData);
-                    Object.assign(gameState, parsed);
+                    mergeState(gameState, parsed);
+                    ensureStateShape();
                 } catch (e) {
                     console.error('Error loading save data:', e);
                 }
             }
             
             updateEggAppearance();
+        }
+
+        function mergeState(target, source) {
+            for (const [key, value] of Object.entries(source || {})) {
+                if (
+                    value &&
+                    typeof value === 'object' &&
+                    !Array.isArray(value) &&
+                    target[key] &&
+                    typeof target[key] === 'object' &&
+                    !Array.isArray(target[key])
+                ) {
+                    mergeState(target[key], value);
+                } else {
+                    target[key] = value;
+                }
+            }
+        }
+
+        function ensureStateShape() {
+            for (const key of Object.keys(UPGRADES)) {
+                if (typeof gameState.upgrades[key] !== 'number') gameState.upgrades[key] = 0;
+            }
+            for (const key of Object.keys(TOOLS)) {
+                if (typeof gameState.tools[key] !== 'number') gameState.tools[key] = 0;
+            }
+            for (const key of Object.keys(PETS)) {
+                if (typeof gameState.pets[key] !== 'number') gameState.pets[key] = 0;
+            }
+            for (const key of Object.keys(PROCESSORS)) {
+                if (typeof gameState.processors[key] !== 'number') gameState.processors[key] = 0;
+            }
+            if (!gameState.mining) gameState.mining = { drill: 0, battery: 0 };
+            if (typeof gameState.mining.drill !== 'number') gameState.mining.drill = 0;
+            if (typeof gameState.mining.battery !== 'number') gameState.mining.battery = 0;
+            gameState.energy = Math.min(getMaxEnergy(), Number(gameState.energy || 0));
+            gameState.ore = Number(gameState.ore || 0);
         }
 
         // Initialize the game

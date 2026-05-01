@@ -4,7 +4,7 @@ export default {
     "./index.html",
     "./main.js",
     "./src/**/*.{js,ts,jsx,tsx,css}",
-    "./games/**/*.{html,js}"
+    "./{Tower-Defence,Cyber-Botanist,Egg-Hatching,Void-Miner,World-Fishing}/**/*.{html,js}"
   ],
   theme: {
     extend: {

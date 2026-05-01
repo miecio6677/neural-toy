@@ -36,11 +36,11 @@
         }
 
         .container {
-            max-width: 1400px;
+            width: min(1400px, 100%);
             margin: 0 auto;
             padding: 20px;
             display: grid;
-            grid-template-columns: 1fr 300px;
+            grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
             grid-template-rows: auto 1fr auto;
             gap: 20px;
             min-height: calc(100vh - 40px);
@@ -52,6 +52,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 16px;
             padding: 15px 20px;
             background: var(--panel-bg);
             border: 1px solid var(--border);
@@ -60,15 +61,21 @@
         }
 
         .stats-container {
-            display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(120px, 1fr));
+            gap: 12px;
+            flex: 1;
         }
 
         .stat {
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-width: 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 8px;
         }
 
         .stat-value {
@@ -85,7 +92,8 @@
         }
 
         .xp-bar-container {
-            width: 200px;
+            width: 100%;
+            max-width: 200px;
             height: 10px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 5px;
@@ -102,6 +110,7 @@
         .menu-icons {
             display: flex;
             gap: 15px;
+            flex: none;
         }
 
         .icon-btn {
@@ -128,8 +137,9 @@
 
         /* Seed Selection */
         .seed-selection {
-            display: flex;
-            gap: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 12px;
             padding: 15px;
             background: var(--panel-bg);
             border: 1px solid var(--border);
@@ -146,7 +156,10 @@
             cursor: pointer;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            min-height: 44px;
+            text-align: center;
             transition: all 0.2s ease;
         }
 
@@ -168,9 +181,10 @@
         /* Garden Grid */
         .garden-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
             gap: 15px;
             flex-grow: 1;
+            align-content: start;
         }
 
         .plot {
@@ -183,6 +197,8 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            min-height: 118px;
+            touch-action: manipulation;
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
@@ -231,13 +247,15 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            min-width: 0;
         }
 
         .panel {
             background: var(--panel-bg);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 20px;
+            padding: 18px;
+            min-width: 0;
         }
 
         .panel-title {
@@ -251,12 +269,15 @@
 
         .upgrade-item {
             padding: 15px;
-            border-bottom: 1px solid var(--border);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.03);
             transition: all 0.2s ease;
         }
 
         .upgrade-item:last-child {
-            border-bottom: none;
+            margin-bottom: 0;
         }
 
         .upgrade-item:hover {
@@ -267,6 +288,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
             margin-bottom: 8px;
         }
 
@@ -289,6 +311,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
         }
 
         .btn {
@@ -302,7 +325,9 @@
             font-family: 'Space Mono', monospace;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 5px;
+            min-height: 42px;
         }
 
         .btn:hover:not(:disabled) {
@@ -393,6 +418,8 @@
             .container {
                 grid-template-columns: 1fr;
                 grid-template-rows: auto auto 1fr auto;
+                padding: 14px;
+                min-height: auto;
             }
             
             .sidebar {
@@ -405,31 +432,57 @@
             }
             
             .stats-container {
-                gap: 15px;
-                margin-bottom: 15px;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                width: 100%;
             }
             
             .top-bar {
-                flex-direction: column;
-                align-items: flex-start;
+                align-items: stretch;
             }
             
             .menu-icons {
-                align-self: flex-end;
+                align-self: stretch;
+                justify-content: flex-end;
             }
         }
 
         @media (max-width: 600px) {
+            body {
+                min-height: 100dvh;
+            }
+
             .garden-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
             
             .seed-selection {
-                justify-content: center;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
             }
             
             .stats-container {
-                justify-content: center;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stat-value {
+                font-size: 1.1rem;
+            }
+
+            .panel,
+            .seed-selection,
+            .top-bar {
+                padding: 12px;
+            }
+
+            .upgrade-header,
+            .upgrade-action {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .btn,
+            .seed-btn {
                 width: 100%;
             }
         }
@@ -485,6 +538,9 @@
                 </button>
                 <button class="seed-btn" data-seed="oak" disabled>
                     <i data-lucide="tree-pine"></i> Neural Oak (200)
+                </button>
+                <button class="seed-btn" id="harvest-all-btn">
+                    <i data-lucide="scissors"></i> Harvest Ready
                 </button>
             </div>
 
@@ -565,6 +621,28 @@
                         <button class="btn" id="buy-sprinkler">Buy</button>
                     </div>
                 </div>
+                <div class="upgrade-item">
+                    <div class="upgrade-header">
+                        <div class="upgrade-name">Garden Expansion</div>
+                        <div class="upgrade-cost">Cost: <span id="expansion-cost">600</span></div>
+                    </div>
+                    <div class="upgrade-desc">Adds 4 extra plots per level, up to 24 total plots</div>
+                    <div class="upgrade-action">
+                        <div class="upgrade-level">Level: <span id="expansion-level">0</span>/2</div>
+                        <button class="btn" id="buy-expansion">Buy</button>
+                    </div>
+                </div>
+                <div class="upgrade-item">
+                    <div class="upgrade-header">
+                        <div class="upgrade-name">Nutrient Loop</div>
+                        <div class="upgrade-cost">Cost: <span id="nutrient-cost">500</span></div>
+                    </div>
+                    <div class="upgrade-desc">Increases all oxygen production and harvest rewards by 8% per level</div>
+                    <div class="upgrade-action">
+                        <div class="upgrade-level">Level: <span id="nutrient-level">0</span>/12</div>
+                        <button class="btn" id="buy-nutrient">Buy</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -588,7 +666,9 @@
                 harvester: { level: 0, baseCost: 150 },
                 lab: { level: 0, baseCost: 300 },
                 optimizer: { purchased: false, cost: 250 },
-                sprinkler: { purchased: false, cost: 400 }
+                sprinkler: { purchased: false, cost: 400 },
+                expansion: { level: 0, baseCost: 600, max: 2 },
+                nutrient: { level: 0, baseCost: 500, max: 12 }
             },
             uvOverdrive: {
                 active: false,
@@ -645,20 +725,49 @@
         const notificationsEl = document.getElementById('notifications');
         const harvesterCostEl = document.getElementById('harvester-cost');
         const labCostEl = document.getElementById('lab-cost');
+        const expansionCostEl = document.getElementById('expansion-cost');
+        const nutrientCostEl = document.getElementById('nutrient-cost');
 
         // Initialize Game
         function initGame() {
-            createGardenGrid();
             setupEventListeners();
             loadGame();
+            createGardenGrid();
+            gameState.plots.forEach((_, index) => updatePlot(index));
             updateUI();
             startGameLoop();
         }
 
+        function getPlotLimit() {
+            return 16 + (gameState.upgrades.expansion.level * 4);
+        }
+
+        function ensurePlotCapacity() {
+            const target = getPlotLimit();
+            while (gameState.plots.length < target) {
+                gameState.plots.push(null);
+            }
+            if (gameState.plots.length > target) {
+                gameState.plots = gameState.plots.slice(0, target);
+            }
+        }
+
+        function getLevelUpgradeCost(upgradeName) {
+            const upgrade = gameState.upgrades[upgradeName];
+            return Math.floor(upgrade.baseCost * Math.pow(1.42, upgrade.level));
+        }
+
+        function getProductionMultiplier() {
+            const optimizer = gameState.upgrades.optimizer.purchased ? 1.15 : 1;
+            const nutrient = 1 + gameState.upgrades.nutrient.level * 0.08;
+            return optimizer * nutrient;
+        }
+
         // Create Garden Grid
         function createGardenGrid() {
+            ensurePlotCapacity();
             gardenGridEl.innerHTML = '';
-            for (let i = 0; i < 16; i++) {
+            for (let i = 0; i < gameState.plots.length; i++) {
                 const plotEl = document.createElement('div');
                 plotEl.className = 'plot';
                 plotEl.dataset.index = i;
@@ -683,6 +792,7 @@
             // Seed selection
             document.querySelectorAll('.seed-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
+                    if (!btn.dataset.seed) return;
                     if (btn.disabled) return;
                     document.querySelectorAll('.seed-btn').forEach(b => b.classList.remove('selected'));
                     btn.classList.add('selected');
@@ -710,7 +820,10 @@
             document.getElementById('buy-lab').addEventListener('click', () => buyUpgrade('lab'));
             document.getElementById('buy-optimizer').addEventListener('click', () => buyUpgrade('optimizer'));
             document.getElementById('buy-sprinkler').addEventListener('click', () => buyUpgrade('sprinkler'));
+            document.getElementById('buy-expansion').addEventListener('click', () => buyUpgrade('expansion'));
+            document.getElementById('buy-nutrient').addEventListener('click', () => buyUpgrade('nutrient'));
             document.getElementById('activate-uv').addEventListener('click', activateUVOverdrive);
+            document.getElementById('harvest-all-btn').addEventListener('click', harvestAllMature);
 
             // Save button
             document.getElementById('save-btn').addEventListener('click', saveGame);
@@ -765,11 +878,11 @@
             const plant = plants[plot.type];
             
             // Calculate rewards
-            const reward = plant.incomePerSecond * (gameState.upgrades.optimizer.purchased ? 1.15 : 1);
+            const boostedReward = plant.incomePerSecond * getProductionMultiplier();
             const xpGain = plant.xp;
             
             // Apply UV overdrive bonus
-            const finalReward = gameState.uvOverdrive.active ? reward * 2 : reward;
+            const finalReward = gameState.uvOverdrive.active ? boostedReward * 2 : boostedReward;
             
             // Award rewards
             gameState.oxygen += finalReward;
@@ -788,6 +901,22 @@
             
             // Check for level up
             checkLevelUp();
+        }
+
+        function harvestAllMature() {
+            let harvested = 0;
+            gameState.plots.forEach((plot, index) => {
+                if (plot && plot.mature) {
+                    harvestPlant(index);
+                    harvested++;
+                }
+            });
+
+            if (harvested === 0) {
+                showNotification("No mature plants are ready yet.", 'info');
+            } else {
+                showNotification(`Harvested ${harvested} mature plants.`, 'success');
+            }
         }
 
         // Auto Harvest Plants
@@ -867,6 +996,12 @@
             let cost;
             if (upgradeName === 'harvester' || upgradeName === 'lab') {
                 cost = upgrade.baseCost * (upgrade.level + 1);
+            } else if (upgradeName === 'expansion' || upgradeName === 'nutrient') {
+                if (upgrade.level >= upgrade.max) {
+                    showNotification("Upgrade is already maxed!", 'warning');
+                    return;
+                }
+                cost = getLevelUpgradeCost(upgradeName);
             } else {
                 cost = upgrade.cost;
             }
@@ -880,7 +1015,7 @@
             gameState.oxygen -= cost;
             
             // Apply upgrade
-            if (upgradeName === 'harvester' || upgradeName === 'lab') {
+            if (upgradeName === 'harvester' || upgradeName === 'lab' || upgradeName === 'nutrient' || upgradeName === 'expansion') {
                 upgrade.level++;
                 
                 // Update growth times for existing plants if lab upgrade
@@ -892,6 +1027,12 @@
                             updatePlot(index);
                         }
                     });
+                }
+
+                if (upgradeName === 'expansion') {
+                    ensurePlotCapacity();
+                    createGardenGrid();
+                    gameState.plots.forEach((_, index) => updatePlot(index));
                 }
             } else {
                 upgrade.purchased = true;
@@ -977,9 +1118,7 @@
             });
             
             // Apply optimizer bonus
-            if (gameState.upgrades.optimizer.purchased) {
-                rate *= 1.15;
-            }
+            rate *= getProductionMultiplier();
             
             // Apply UV overdrive bonus
             if (gameState.uvOverdrive.active) {
@@ -1004,10 +1143,16 @@
             document.getElementById('lab-level').textContent = gameState.upgrades.lab.level;
             document.getElementById('optimizer-level').textContent = gameState.upgrades.optimizer.purchased ? 'Yes' : 'No';
             document.getElementById('sprinkler-level').textContent = gameState.upgrades.sprinkler.purchased ? 'Yes' : 'No';
+            document.getElementById('expansion-level').textContent = gameState.upgrades.expansion.level;
+            document.getElementById('nutrient-level').textContent = gameState.upgrades.nutrient.level;
             
             // Update upgrade costs
             harvesterCostEl.textContent = gameState.upgrades.harvester.baseCost * (gameState.upgrades.harvester.level + 1);
             labCostEl.textContent = gameState.upgrades.lab.baseCost * (gameState.upgrades.lab.level + 1);
+            expansionCostEl.textContent = gameState.upgrades.expansion.level >= gameState.upgrades.expansion.max ? 'MAX' : getLevelUpgradeCost('expansion');
+            nutrientCostEl.textContent = gameState.upgrades.nutrient.level >= gameState.upgrades.nutrient.max ? 'MAX' : getLevelUpgradeCost('nutrient');
+            document.getElementById('buy-expansion').disabled = gameState.upgrades.expansion.level >= gameState.upgrades.expansion.max;
+            document.getElementById('buy-nutrient').disabled = gameState.upgrades.nutrient.level >= gameState.upgrades.nutrient.max;
             
             // Update UV status
             const uvStatusEl = document.getElementById('uv-status');
@@ -1028,6 +1173,9 @@
             document.querySelector('[data-seed="fern"]').disabled = gameState.level < 2;
             document.querySelector('[data-seed="lily"]').disabled = gameState.level < 4;
             document.querySelector('[data-seed="oak"]').disabled = gameState.level < 6;
+            document.querySelectorAll('[data-seed]').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.seed === gameState.selectedSeed);
+            });
         }
 
         // Game Loop
@@ -1052,9 +1200,7 @@
                 });
                 
                 // Apply bonuses
-                if (gameState.upgrades.optimizer.purchased) {
-                    production *= 1.15;
-                }
+                production *= getProductionMultiplier();
                 
                 if (gameState.uvOverdrive.active) {
                     production *= 2;
@@ -1204,6 +1350,8 @@
                             }
                         });
                     }
+
+                    ensurePlotCapacity();
                     
                     // Restore UV overdrive
                     if (parsed.uvOverdrive) {
@@ -1218,7 +1366,10 @@
             }
             
             // Update all plots
-            gameState.plots.forEach((_, index) => updatePlot(index));
+            ensurePlotCapacity();
+            if (gardenGridEl.children.length) {
+                gameState.plots.forEach((_, index) => updatePlot(index));
+            }
         }
 
         // Initialize the game when the page loads

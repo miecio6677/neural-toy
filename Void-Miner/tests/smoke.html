@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Void Miner Smoke Test</title>
+  </head>
+  <body>
+    <pre id="result">Running...</pre>
+    <script src="../src/data.js"></script>
+    <script src="../src/utils.js"></script>
+    <script src="../src/state.js"></script>
+    <script src="../src/game.js"></script>
+    <script>
+      const { VoidMinerGame } = window.VoidMinerGame;
+      const { makeDefaultState } = window.VoidMinerState;
+      const game = new VoidMinerGame(makeDefaultState());
+      game.autosaveTimer = 999;
+
+      const startingHp = game.state.currentBlock.hp;
+      game.mineManual();
+      const miningOk = game.state.currentBlock.hp < startingHp;
+      const afterFirstHit = game.state.currentBlock.hp;
+      game.mineManual();
+      const spamOk = game.state.currentBlock.hp < afterFirstHit;
+
+      game.addResource("ironOre", 5);
+      game.addResource("coal", 2);
+      game.startRecipe("ironIngot");
+      game.tick(13);
+      const refineryOk = game.state.resources.ironIngot >= 2;
+
+      game.addResource("quartz", 6);
+      game.addResource("copperWire", 2);
+      game.addResource("nebulaDust", 1);
+      game.state.money = 1000;
+      game.buyPotion("haste");
+      game.usePotion("haste");
+      const potionOk = game.state.potions.haste.remaining > 0;
+
+      game.addResource("stone", 5);
+      const moneyBeforeSale = game.state.money;
+      game.sellResource("stone", "all");
+      const marketOk = game.state.money > moneyBeforeSale;
+
+      game.addResource("copperIngot", 7);
+      game.startCasting("copper-head");
+      game.tick(20);
+      game.startCasting("copper-shaft");
+      game.tick(20);
+      game.startCasting("copper-binding");
+      game.tick(20);
+      game.craftPickaxe("copperPickaxe");
+      const forgeOk = game.state.pickaxes.equipped === "copperPickaxe";
+
+      game.state.depth = 24;
+      game.advanceDepth(1, false);
+      const bossOk = game.state.combat.enemy?.boss === true;
+
+      const checks = { miningOk, spamOk, refineryOk, potionOk, marketOk, forgeOk, bossOk };
+      const passed = Object.values(checks).every(Boolean);
+      document.querySelector("#result").textContent = `${passed ? "PASS" : "FAIL"} ${JSON.stringify(checks)}`;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Void Miner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas id="void-canvas" aria-hidden="true"></canvas>
+    <div class="stress-vignette" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <h1>Void Miner</h1>
+            <p id="biome-label">Shallow Crust</p>
+          </div>
+        </div>
+
+        <section class="stat-strip" aria-label="Core stats">
+          <div class="stat-pill">
+            <span>Depth</span>
+            <strong id="depth-value">1</strong>
+          </div>
+          <div class="stat-pill">
+            <span>HP</span>
+            <strong id="hp-value">100/100</strong>
+          </div>
+          <div class="stat-pill">
+            <span>Shield</span>
+            <strong id="shield-value">0/0</strong>
+          </div>
+          <div class="stat-pill">
+            <span>Stress</span>
+            <strong id="stress-value">0%</strong>
+          </div>
+          <div class="stat-pill money-pill">
+            <span>Credits</span>
+            <strong id="money-value">0</strong>
+          </div>
+          <div class="stat-pill void-core-pill">
+            <span>Void Cores</span>
+            <strong id="void-core-value">0</strong>
+          </div>
+        </section>
+
+        <div class="top-actions">
+          <button id="save-button" class="icon-button" type="button" title="Save game" aria-label="Save game">S</button>
+          <button id="reset-button" class="icon-button danger" type="button" title="Reset save" aria-label="Reset save">R</button>
+        </div>
+      </header>
+
+      <section id="active-buffs" class="active-buffs" aria-label="Active buffs"></section>
+
+      <div class="layout-grid">
+        <section class="panel mine-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Mine Face</h2>
+              <p id="block-subtitle">Common stone seam</p>
+            </div>
+            <span id="rarity-badge" class="rarity-badge">Common</span>
+          </div>
+
+          <div id="mine-stage" class="mine-stage">
+            <div id="block-visual" class="block-visual">
+              <div class="block-glow"></div>
+              <div class="block-core"></div>
+              <div class="block-cracks"></div>
+            </div>
+            <div class="hp-bar">
+              <span id="block-hp-bar"></span>
+            </div>
+            <div class="bar-caption">
+              <span id="block-name">Basalt Block</span>
+              <span id="block-hp-text">0 / 0 HP</span>
+            </div>
+          </div>
+
+          <section id="combat-card" class="combat-card hidden" aria-live="polite">
+            <div class="panel-heading compact">
+              <div>
+                <h3 id="enemy-name">Enemy</h3>
+                <p id="enemy-subtitle">Blocking the tunnel</p>
+              </div>
+              <span id="enemy-kind" class="rarity-badge danger-badge">Enemy</span>
+            </div>
+            <div class="hp-bar enemy">
+              <span id="enemy-hp-bar"></span>
+            </div>
+            <div class="bar-caption">
+              <span id="enemy-hp-text">0 / 0 HP</span>
+              <span id="enemy-damage-text">0 damage</span>
+            </div>
+          </section>
+
+          <div class="mine-actions">
+            <button id="mine-button" class="primary-action" type="button">Mine</button>
+            <button id="descend-button" class="secondary-action" type="button">Descend</button>
+          </div>
+
+          <div class="mine-stats">
+            <div><span>Damage</span><strong id="damage-stat">0</strong></div>
+            <div><span>Speed</span><strong id="speed-stat">0/s</strong></div>
+            <div><span>Crit</span><strong id="crit-stat">0%</strong></div>
+            <div><span>Luck</span><strong id="luck-stat">0%</strong></div>
+            <div><span>Drones</span><strong id="drone-stat">0</strong></div>
+            <div><span>Auto DPS</span><strong id="auto-stat">0</strong></div>
+          </div>
+        </section>
+
+        <section class="panel inventory-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Inventory</h2>
+              <p id="inventory-summary">Raw, refined, and boss materials</p>
+            </div>
+          </div>
+          <div id="resource-list" class="resource-list"></div>
+        </section>
+
+        <section class="panel systems-panel">
+          <nav class="tabbar" aria-label="System tabs">
+            <button class="tab-button active" type="button" data-tab="upgrades">Upgrades</button>
+            <button class="tab-button" type="button" data-tab="forge">Forge</button>
+            <button class="tab-button" type="button" data-tab="refinery">Refinery</button>
+            <button class="tab-button" type="button" data-tab="potions">Potions</button>
+            <button class="tab-button" type="button" data-tab="market">Market</button>
+            <button class="tab-button" type="button" data-tab="relics">Relics</button>
+            <button class="tab-button" type="button" data-tab="rebirth">Rebirth</button>
+            <button class="tab-button" type="button" data-tab="log">Log</button>
+          </nav>
+
+          <div id="tab-upgrades" class="tab-panel active">
+            <div id="upgrade-list" class="card-list"></div>
+          </div>
+
+          <div id="tab-forge" class="tab-panel">
+            <div class="refinery-status forge-status">
+              <div><span>Equipped</span><strong id="pickaxe-name">Starter Pickaxe</strong></div>
+              <div><span>Damage</span><strong id="pickaxe-damage">1.00x</strong></div>
+              <div><span>Forge speed</span><strong id="forge-speed">1.00x</strong></div>
+              <div><span>Forge slots</span><strong id="forge-slots">1</strong></div>
+            </div>
+            <h3 class="subheading">Molds</h3>
+            <div id="casting-list" class="card-list"></div>
+            <h3 class="subheading">Forge Queue</h3>
+            <div id="forge-queue" class="queue-list"></div>
+            <h3 class="subheading">Pickaxes</h3>
+            <div id="pickaxe-list" class="card-list"></div>
+          </div>
+
+          <div id="tab-refinery" class="tab-panel">
+            <div class="refinery-status">
+              <div><span>Level</span><strong id="refinery-level">1</strong></div>
+              <div><span>Speed</span><strong id="refinery-speed">1.00x</strong></div>
+              <div><span>Efficiency</span><strong id="refinery-efficiency">0%</strong></div>
+              <div><span>Slots</span><strong id="refinery-slots">1</strong></div>
+            </div>
+            <div id="recipe-list" class="card-list"></div>
+            <h3 class="subheading">Queue</h3>
+            <div id="refinery-queue" class="queue-list"></div>
+          </div>
+
+          <div id="tab-potions" class="tab-panel">
+            <div id="potion-list" class="card-list"></div>
+          </div>
+
+          <div id="tab-market" class="tab-panel">
+            <div class="slot-summary">
+              <span>Credits</span>
+              <strong id="market-money">0</strong>
+            </div>
+            <div id="market-list" class="card-list"></div>
+          </div>
+
+          <div id="tab-relics" class="tab-panel">
+            <div class="slot-summary">
+              <span>Equipped slots</span>
+              <strong id="relic-slot-summary">0 / 3</strong>
+            </div>
+            <div id="relic-list" class="card-list"></div>
+          </div>
+
+          <div id="tab-rebirth" class="tab-panel">
+            <section class="rebirth-box">
+              <h3>Rebirth Chamber</h3>
+              <p id="rebirth-summary">Reach depth 180 to convert this run into Void Cores.</p>
+              <button id="rebirth-button" class="primary-action" type="button">Rebirth</button>
+            </section>
+            <div id="prestige-list" class="card-list"></div>
+          </div>
+
+          <div id="tab-log" class="tab-panel">
+            <div id="event-log" class="event-log"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <template id="cost-template">
+      <span class="cost-chip"></span>
+    </template>
+
+    <script src="src/data.js"></script>
+    <script src="src/utils.js"></script>
+    <script src="src/state.js"></script>
+    <script src="src/game.js"></script>
+    <script src="src/ui.js"></script>
+    <script src="src/main.js"></script>
+  </body>
+</html>

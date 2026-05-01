@@ -1,5 +1,6 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+<<<<<<< HEAD
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,139 +8,549 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
+=======
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SquelFun | Indie Game Portal</title>
+>>>>>>> 301bbb3 (Force static build type)
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --neural-blue: #5e9bff;
-            --neural-green: #4ade80;
-            --neural-purple: #a78bfa;
-            --neural-red: #f87171;
+      :root {
+        color-scheme: dark;
+        --bg: #08090b;
+        --surface: #11141a;
+        --surface-strong: #171b23;
+        --line: rgba(255, 255, 255, 0.11);
+        --text: #f5f7fb;
+        --muted: #a8b0c1;
+        --soft: #737b8f;
+        --green: #52d991;
+        --cyan: #56c7ff;
+        --amber: #f4be5f;
+        --rose: #f4728b;
+        --violet: #a78bfa;
+        --radius: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background:
+          linear-gradient(135deg, rgba(82, 217, 145, 0.08), transparent 26rem),
+          linear-gradient(315deg, rgba(244, 190, 95, 0.08), transparent 30rem),
+          var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        letter-spacing: 0;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      .page-shell {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid var(--line);
+        background: rgba(8, 9, 11, 0.86);
+        backdrop-filter: blur(18px);
+      }
+
+      .header-inner {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 18px;
+        align-items: center;
+        min-height: 76px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border: 1px solid rgba(86, 199, 255, 0.42);
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, rgba(86, 199, 255, 0.24), rgba(82, 217, 145, 0.14));
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: clamp(1.35rem, 2vw, 1.95rem);
+        line-height: 1;
+      }
+
+      .brand span:last-child {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      .main-nav,
+      .header-actions,
+      .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .main-nav a,
+      .ghost-button,
+      .filter-button {
+        min-height: 38px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+        cursor: pointer;
+        transition:
+          color 160ms ease,
+          border-color 160ms ease,
+          background 160ms ease,
+          transform 160ms ease;
+      }
+
+      .main-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        font-size: 0.9rem;
+      }
+
+      .ghost-button,
+      .filter-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 12px;
+      }
+
+      .main-nav a:hover,
+      .ghost-button:hover,
+      .filter-button:hover,
+      .filter-button.active {
+        border-color: rgba(86, 199, 255, 0.5);
+        background: rgba(86, 199, 255, 0.1);
+        color: var(--text);
+      }
+
+      .main-nav a:hover,
+      .ghost-button:hover {
+        transform: translateY(-1px);
+      }
+
+      .brand-mark i,
+      .main-nav i,
+      .ghost-button i,
+      .open-row i {
+        width: 18px;
+        height: 18px;
+        flex: none;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 22px;
+        align-items: end;
+        padding: 42px 0 26px;
+      }
+
+      .hero h2 {
+        max-width: 780px;
+        margin: 0;
+        font-size: clamp(2rem, 6vw, 4.6rem);
+        line-height: 0.96;
+      }
+
+      .hero p {
+        max-width: 660px;
+        margin: 18px 0 0;
+        color: var(--muted);
+        font-size: clamp(0.98rem, 1.7vw, 1.15rem);
+        line-height: 1.7;
+      }
+
+      .status-stack {
+        display: grid;
+        gap: 10px;
+        min-width: 220px;
+      }
+
+      .status-pill {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.045);
+      }
+
+      .status-pill span {
+        color: var(--soft);
+        font-size: 0.78rem;
+      }
+
+      .status-pill strong {
+        color: var(--text);
+        font-size: 0.92rem;
+      }
+
+      .toolbar {
+        display: grid;
+        grid-template-columns: minmax(220px, 330px) 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin: 10px 0 22px;
+      }
+
+      .search-wrap {
+        position: relative;
+      }
+
+      .search-wrap i {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        width: 18px;
+        height: 18px;
+        color: var(--soft);
+        transform: translateY(-50%);
+        pointer-events: none;
+      }
+
+      .search-wrap input {
+        width: 100%;
+        min-height: 42px;
+        padding: 0 12px 0 40px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        outline: none;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+      }
+
+      .search-wrap input:focus {
+        border-color: rgba(82, 217, 145, 0.58);
+      }
+
+      .catalog-meta {
+        color: var(--muted);
+        font-size: 0.9rem;
+        text-align: right;
+      }
+
+      .game-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 16px;
+      }
+
+      .game-card {
+        position: relative;
+        display: grid;
+        grid-column: span 4;
+        min-height: 360px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        isolation: isolate;
+      }
+
+      .game-card.wide {
+        grid-column: span 6;
+      }
+
+      .game-card img {
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.74;
+        transform: scale(1.01);
+        transition:
+          opacity 220ms ease,
+          transform 320ms ease;
+      }
+
+      .game-card::after {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        content: "";
+        background:
+          linear-gradient(180deg, rgba(8, 9, 11, 0.1), rgba(8, 9, 11, 0.9) 70%),
+          linear-gradient(90deg, rgba(8, 9, 11, 0.86), rgba(8, 9, 11, 0.18));
+      }
+
+      .game-card:hover img,
+      .game-card:focus-visible img {
+        opacity: 0.92;
+        transform: scale(1.05);
+      }
+
+      .game-card:focus-visible {
+        outline: 3px solid rgba(86, 199, 255, 0.58);
+        outline-offset: 3px;
+      }
+
+      .card-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        min-height: 100%;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 16px;
+        padding: 22px;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 9px;
+        border: 1px solid rgba(255, 255, 255, 0.17);
+        border-radius: 999px;
+        background: rgba(8, 9, 11, 0.58);
+        color: var(--text);
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .tag.new {
+        border-color: rgba(82, 217, 145, 0.48);
+        color: #bff7d4;
+      }
+
+      .tag.live {
+        border-color: rgba(86, 199, 255, 0.48);
+        color: #c7ebff;
+      }
+
+      .tag.arcade {
+        border-color: rgba(244, 114, 139, 0.5);
+        color: #ffd0d8;
+      }
+
+      .tag.sim {
+        border-color: rgba(167, 139, 250, 0.5);
+        color: #ddd3ff;
+      }
+
+      .game-card h3 {
+        max-width: 15ch;
+        margin: 0;
+        font-size: clamp(1.55rem, 4vw, 2.75rem);
+        line-height: 0.98;
+      }
+
+      .game-card p {
+        max-width: 48ch;
+        margin: 0;
+        color: rgba(245, 247, 251, 0.82);
+        line-height: 1.55;
+      }
+
+      .open-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text);
+        font-weight: 800;
+      }
+
+      .empty-state {
+        display: none;
+        margin: 20px 0 0;
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+      }
+
+      .empty-state.visible {
+        display: block;
+      }
+
+      .status-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        padding: 34px 0 52px;
+      }
+
+      .info-panel {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.045);
+        padding: 20px;
+      }
+
+      .info-panel h3 {
+        margin: 0 0 14px;
+        font-size: 1rem;
+      }
+
+      .path-list {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .path-list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-width: 0;
+        color: var(--muted);
+      }
+
+      .path-list code {
+        overflow: hidden;
+        color: var(--text);
+        font-size: 0.86rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .site-footer {
+        border-top: 1px solid var(--line);
+        color: var(--soft);
+      }
+
+      .footer-inner {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 24px 0;
+        font-size: 0.9rem;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 900px) {
+        .header-inner,
+        .hero,
+        .toolbar,
+        .status-section {
+          grid-template-columns: 1fr;
         }
-        
-        body {
-            font-family: 'Space Mono', monospace;
-            background-color: #000000;
-            color: #ffffff;
-            overflow-x: hidden;
+
+        .main-nav,
+        .header-actions,
+        .filter-row {
+          flex-wrap: wrap;
         }
-        
-        .game-card {
-            height: 280px;
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+        .catalog-meta {
+          text-align: left;
         }
-        
-        .game-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
+
+        .game-card,
+        .game-card.wide {
+          grid-column: span 6;
         }
-        
-        .game-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 50%, transparent 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 20px;
-            transition: background 0.3s ease;
+      }
+
+      @media (max-width: 640px) {
+        .page-shell {
+          width: min(100% - 20px, 1180px);
         }
-        
-        .game-card:hover .game-overlay {
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
+
+        .site-header {
+          position: static;
         }
-        
-        .game-card:hover img {
-            transform: scale(1.05);
+
+        .header-inner {
+          gap: 12px;
+          padding: 14px 0;
         }
-        
-        .game-tag {
-            font-size: 0.65rem;
-            letter-spacing: 0.15em;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            font-weight: 700;
+
+        .main-nav a,
+        .ghost-button,
+        .filter-button {
+          flex: 1 1 auto;
         }
-        
-        .game-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            line-height: 1.2;
+
+        .hero {
+          padding-top: 28px;
         }
-        
-        .game-description {
-            font-size: 0.75rem;
-            opacity: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: all 0.4s ease;
-            line-height: 1.5;
+
+        .game-grid {
+          grid-template-columns: 1fr;
         }
-        
-        .game-card:hover .game-description {
-            opacity: 1;
-            max-height: 100px;
-            margin-top: 8px;
+
+        .game-card,
+        .game-card.wide {
+          grid-column: span 1;
+          min-height: 310px;
         }
-        
-        .status-indicator {
-            display: inline-flex;
-            align-items: center;
-            font-size: 0.7rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
+
+        .card-content {
+          padding: 18px;
         }
-        
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--neural-green);
-            margin-right: 8px;
-            box-shadow: 0 0 8px var(--neural-green);
+
+        .footer-inner {
+          flex-direction: column;
         }
-        
-        .nav-link {
-            transition: all 0.3s ease;
-        }
-        
-        .nav-link:hover {
-            color: #ffffff;
-            transform: translateY(-2px);
-        }
-        
-        .nav-icon {
-            transition: all 0.3s ease;
-        }
-        
-        .nav-link:hover .nav-icon {
-            transform: scale(1.15);
-        }
-        
-        .tag-defense { color: var(--neural-blue); }
-        .tag-simulation { color: var(--neural-green); }
-        .tag-arcade { color: var(--neural-purple); }
-        .tag-idle { color: var(--neural-red); }
-        .tag-puzzle { color: #2dd4bf; }
-        .tag-logic { color: #fbbf24; }
-        .tag-racing { color: #ec4899; }
-        .tag-horror { color: #94a3b8; }
-        .tag-strategy { color: #a78bfa; }
-        .tag-rhythm { color: #f472b6; }
-        .tag-rpg { color: #fdba74; }
+      }
     </style>
+<<<<<<< HEAD
 </head>
 <body class="min-h-screen flex flex-col">
     <!-- Header -->
@@ -156,181 +567,232 @@
                 <div class="status-dot"></div>
                 SYSTEM STATUS: ONLINE
             </div>
+=======
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="page-shell header-inner">
+        <a class="brand" href="./index.html" aria-label="SquelFun home">
+          <span class="brand-mark" aria-hidden="true"><i data-lucide="gamepad-2"></i></span>
+          <div>
+            <h1>SquelFun</h1>
+            <span>Playable local builds</span>
+          </div>
+        </a>
+
+        <nav class="main-nav" aria-label="Main navigation">
+          <a href="#games"><i data-lucide="layout-grid"></i> Games</a>
+          <a href="#status"><i data-lucide="activity"></i> Status</a>
+        </nav>
+
+        <div class="header-actions">
+          <button class="ghost-button" type="button" data-random-game title="Open a random game">
+            <i data-lucide="shuffle"></i>
+            Random
+          </button>
+>>>>>>> 301bbb3 (Force static build type)
         </div>
+      </div>
     </header>
-    
-    <!-- Navigation -->
-    <nav class="py-6 px-6 border-b border-gray-900">
-        <div class="max-w-7xl mx-auto flex justify-center space-x-12">
-            <a href="#" class="nav-link flex flex-col items-center group">
-                <i data-lucide="gamepad-2" class="w-6 h-6 mb-2 nav-icon text-gray-500 group-hover:text-white"></i>
-                <span class="text-xs uppercase tracking-widest">Games</span>
-            </a>
-            <a href="#" class="nav-link flex flex-col items-center group">
-                <i data-lucide="book-open" class="w-6 h-6 mb-2 nav-icon text-gray-500 group-hover:text-white"></i>
-                <span class="text-xs uppercase tracking-widest">Docs</span>
-            </a>
-            <a href="#" class="nav-link flex flex-col items-center group">
-                <i data-lucide="award" class="w-6 h-6 mb-2 nav-icon text-gray-500 group-hover:text-white"></i>
-                <span class="text-xs uppercase tracking-widest">Rewards</span>
-            </a>
-            <a href="#" class="nav-link flex flex-col items-center group">
-                <i data-lucide="settings" class="w-6 h-6 mb-2 nav-icon text-gray-500 group-hover:text-white"></i>
-                <span class="text-xs uppercase tracking-widest">Settings</span>
-            </a>
+
+    <main class="page-shell">
+      <section class="hero" aria-labelledby="portal-title">
+        <div>
+          <h2 id="portal-title">A compact portal for the whole game shelf.</h2>
+          <p>
+            Five local games are wired directly from the repository root, including World Fishing
+            and Void Miner.
+          </p>
         </div>
-    </nav>
-    
-    <!-- Main Content -->
-    <main class="flex-grow py-12 px-6">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                <!-- Game 1: Tower Defence -->
-                <a href="Tower-Defence/" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800" alt="Cyber City">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-defense">Defense</span>
-                        <h3 class="game-title">Tower Defence</h3>
-                        <p class="game-description">Protect the core from waves of digital viruses in this cyberpunk defense challenge.</p>
-                    </div>
-                </a>
-                
-                <!-- Game 2: Cyber Botanist -->
-                <a href="Cyber-Botanist/" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1530836361253-9d55a6914652?auto=format&fit=crop&q=80&w=800" alt="Neon Plants">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-simulation">Simulation</span>
-                        <h3 class="game-title">Cyber Botanist</h3>
-                        <p class="game-description">Grow digital flora in a synthetic ecosystem to maintain oxygen levels in the data realm.</p>
-                    </div>
-                </a>
-                
-                <!-- Game 3: Neural Runner -->
-                <a href="Egg-Hatching-&-Shell-Collection-System/" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1551632436-7a879920dd8f?auto=format&fit=crop&q=80&w=800" alt="Tech Lines">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-arcade">Arcade</span>
-                        <h3 class="game-title">Neural Runner</h3>
-                        <p class="game-description">Dodge firewall barriers in an endless sprint through neural pathways.</p>
-                    </div>
-                </a>
-                
-                <!-- Game 4: Void Miner -->
-                <a href="/Void-Miner/" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&q=80&w=800" alt="Space Asteroid">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-idle">Idle</span>
-                        <h3 class="game-title">Void Miner</h3>
-                        <p class="game-description">Extract rare minerals from dead planets in the cosmic void.</p>
-                    </div>
-                </a>
-                
-                <!-- Game 5: Grid Hacker -->
-                <a href="/games/grid-hacker/" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800" alt="Green Code Matrix">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-puzzle">Puzzle</span>
-                        <h3 class="game-title">Grid Hacker</h3>
-                        <p class="game-description">Crack digital codes in a minimalist logic network.</p>
-                    </div>
-                </a>
-                
-                <!-- Game 6: Bit Flipper -->
-                <a href="/games/bit-flipper/index.html" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800" alt="Microchip">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-logic">Logic</span>
-                        <h3 class="game-title">Bit Flipper</h3>
-                        <p class="game-description">Flip bits from 0 to 1 to save the system from critical failure.</p>
-                    </div>
-                </a>
-                
-                <!-- Game 7: Neon Drift -->
-                <a href="/games/neon-drift/index.html" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=800" alt="Retro Synthwave Car">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-racing">Racing</span>
-                        <h3 class="game-title">Neon Drift</h3>
-                        <p class="game-description">Vector racing in a retro-futuristic world of glowing highways.</p>
-                    </div>
-                </a>
-                
-                <!-- Game 8: Signal Lost -->
-                <a href="/games/signal-lost/index.html" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?auto=format&fit=crop&q=80&w=800" alt="Radio Tower Fog">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-horror">Horror</span>
-                        <h3 class="game-title">Signal Lost</h3>
-                        <p class="game-description">Locate the source of a mysterious signal in the digital void.</p>
-                    </div>
-                </a>
-                
-                <!-- Game 9: Quantum Chess -->
-                <a href="/games/quantum-chess/index.html" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=800" alt="Chess Board Glitch">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-strategy">Strategy</span>
-                        <h3 class="game-title">Quantum Chess</h3>
-                        <p class="game-description">Classic chess where pieces can exist in two places simultaneously.</p>
-                    </div>
-                </a>
-                
-                <!-- Game 10: Synth Wave -->
-                <a href="/games/synth-wave/index.html" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800" alt="Audio Visualizer">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-rhythm">Rhythm</span>
-                        <h3 class="game-title">Synth Wave</h3>
-                        <p class="game-description">Tap to the beat of synthetic pulses in this audio-reactive experience.</p>
-                    </div>
-                </a>
-                
-                <!-- Game 11: Data Leak -->
-                <a href="/games/data-leak/index.html" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&q=80&w=800" alt="Server Room">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-arcade">Arcade</span>
-                        <h3 class="game-title">Data Leak</h3>
-                        <p class="game-description">Plug data leaks in a corrupted server before it crashes.</p>
-                    </div>
-                </a>
-                
-                <!-- Game 12: Alpha Core -->
-                <a href="/games/alpha-core/index.html" class="game-card">
-                    <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800" alt="AI Brain">
-                    <div class="game-overlay">
-                        <span class="game-tag tag-rpg">RPG</span>
-                        <h3 class="game-title">Alpha Core</h3>
-                        <p class="game-description">Explore the inner workings of an artificial intelligence consciousness.</p>
-                    </div>
-                </a>
+
+        <div class="status-stack" aria-label="Catalog summary">
+          <div class="status-pill">
+            <span>Playable</span>
+            <strong>5 games</strong>
+          </div>
+          <div class="status-pill">
+            <span>New entries</span>
+            <strong>2 linked</strong>
+          </div>
+          <div class="status-pill">
+            <span>Paths</span>
+            <strong>Relative</strong>
+          </div>
+        </div>
+      </section>
+
+      <section id="games" aria-labelledby="games-title">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <i data-lucide="search" aria-hidden="true"></i>
+            <input id="search-games" type="search" autocomplete="off" placeholder="Search games" />
+          </div>
+
+          <div class="filter-row" role="list" aria-label="Game filters">
+            <button class="filter-button active" type="button" data-filter="all">All</button>
+            <button class="filter-button" type="button" data-filter="new">New</button>
+            <button class="filter-button" type="button" data-filter="simulation">Simulation</button>
+            <button class="filter-button" type="button" data-filter="strategy">Strategy</button>
+            <button class="filter-button" type="button" data-filter="idle">Idle</button>
+            <button class="filter-button" type="button" data-filter="arcade">Arcade</button>
+          </div>
+
+          <div id="game-count" class="catalog-meta" aria-live="polite"></div>
+        </div>
+
+        <h2 id="games-title" hidden>Games</h2>
+        <div class="game-grid">
+          <a
+            class="game-card wide"
+            href="./World-Fishing/"
+            data-game-card
+            data-title="World Fishing"
+            data-genres="new simulation sports"
+            data-status="new"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&q=80&w=1200"
+              alt="Wide lake shoreline at golden hour"
+            />
+            <div class="card-content">
+              <div class="tag-row">
+                <span class="tag new">New</span>
+                <span class="tag sim">Simulation</span>
+              </div>
+              <h3>World Fishing</h3>
+              <p>Travel between fishing spots, tune your gear, and build out a catch journal.</p>
+              <span class="open-row">Open game <i data-lucide="arrow-up-right"></i></span>
             </div>
+          </a>
+
+          <a
+            class="game-card wide"
+            href="./Void-Miner/"
+            data-game-card
+            data-title="Void Miner"
+            data-genres="new idle rpg mining"
+            data-status="new"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&q=80&w=1200"
+              alt="Deep space nebula"
+            />
+            <div class="card-content">
+              <div class="tag-row">
+                <span class="tag new">New</span>
+                <span class="tag">Idle RPG</span>
+              </div>
+              <h3>Void Miner</h3>
+              <p>Dig through hostile biomes, refine materials, forge tools, and push deeper.</p>
+              <span class="open-row">Open game <i data-lucide="arrow-up-right"></i></span>
+            </div>
+          </a>
+
+          <a
+            class="game-card"
+            href="./Tower-Defence/"
+            data-game-card
+            data-title="Tower Defence"
+            data-genres="strategy defense arcade"
+            data-status="live"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=900"
+              alt="Arcade cabinet controls in neon light"
+            />
+            <div class="card-content">
+              <div class="tag-row">
+                <span class="tag live">Live</span>
+                <span class="tag">Strategy</span>
+              </div>
+              <h3>Tower Defence</h3>
+              <p>Place towers, upgrade lanes, and hold the core against incoming waves.</p>
+              <span class="open-row">Open game <i data-lucide="arrow-up-right"></i></span>
+            </div>
+          </a>
+
+          <a
+            class="game-card"
+            href="./Cyber-Botanist/"
+            data-game-card
+            data-title="Cyber Botanist"
+            data-genres="simulation idle ecology"
+            data-status="live"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1530836361253-9d55a6914652?auto=format&fit=crop&q=80&w=900"
+              alt="Greenhouse plants under colored light"
+            />
+            <div class="card-content">
+              <div class="tag-row">
+                <span class="tag live">Live</span>
+                <span class="tag sim">Simulation</span>
+              </div>
+              <h3>Cyber Botanist</h3>
+              <p>Grow digital flora, automate harvesters, and keep the ecosystem breathing.</p>
+              <span class="open-row">Open game <i data-lucide="arrow-up-right"></i></span>
+            </div>
+          </a>
+
+          <a
+            class="game-card"
+            href="./Egg-Hatching/"
+            data-game-card
+            data-title="Egg Hatching"
+            data-genres="arcade idle collection"
+            data-status="live"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1587486913049-53fc88980cfc?auto=format&fit=crop&q=80&w=900"
+              alt="Eggs arranged in a nest-like tray"
+            />
+            <div class="card-content">
+              <div class="tag-row">
+                <span class="tag live">Live</span>
+                <span class="tag arcade">Collection</span>
+              </div>
+              <h3>Egg Hatching</h3>
+              <p>Crack eggs, process shells, evolve pets, and expand a clicker economy.</p>
+              <span class="open-row">Open game <i data-lucide="arrow-up-right"></i></span>
+            </div>
+          </a>
         </div>
+
+        <div id="empty-state" class="empty-state">
+          No matching games in the current catalog.
+        </div>
+      </section>
+
+      <section id="status" class="status-section" aria-labelledby="status-title">
+        <div class="info-panel">
+          <h3 id="status-title">Resolved Local Paths</h3>
+          <ul class="path-list">
+            <li><code>./World-Fishing/</code><span>OK</span></li>
+            <li><code>./Void-Miner/</code><span>OK</span></li>
+            <li><code>./Tower-Defence/</code><span>OK</span></li>
+            <li><code>./Cyber-Botanist/</code><span>OK</span></li>
+            <li><code>./Egg-Hatching/</code><span>OK</span></li>
+          </ul>
+        </div>
+
+        <div class="info-panel">
+          <h3>Catalog Notes</h3>
+          <ul class="path-list">
+            <li><code>Neural-Runner/</code><span>No index yet</span></li>
+            <li><code>/games/*</code><span>Removed</span></li>
+            <li><code>Egg-Hatching-&amp;-Shell-Collection-System/</code><span>Renamed</span></li>
+          </ul>
+        </div>
+      </section>
     </main>
-    
-    <!-- Footer -->
-    <footer class="py-8 px-6 border-t border-gray-900">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
-            <p class="text-xs text-gray-600 uppercase tracking-widest mb-4 md:mb-0">
-                © 2026 Neural Toybox Labs
-            </p>
-            <div class="flex space-x-6">
-                <a href="#" class="text-gray-500 hover:text-white transition-colors">
-                    <i data-lucide="github" class="w-5 h-5"></i>
-                </a>
-                <a href="#" class="text-gray-500 hover:text-white transition-colors">
-                    <i data-lucide="twitter" class="w-5 h-5"></i>
-                </a>
-                <a href="#" class="text-gray-500 hover:text-white transition-colors">
-                    <i data-lucide="mail" class="w-5 h-5"></i>
-                </a>
-            </div>
-        </div>
+
+    <footer class="site-footer">
+      <div class="page-shell footer-inner">
+        <span>&copy; 2026 SquelFun</span>
+        <span>Static local catalog with verified relative links.</span>
+      </div>
     </footer>
-    
-    <script>
-    // Ten sposób wymusza załadowanie wszystkich dostępnych ikon
-    lucide.createIcons();
-    </script>
-</body>
+
+    <script type="module" src="./main.js"></script>
+  </body>
 </html>
